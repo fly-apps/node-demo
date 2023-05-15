@@ -15,6 +15,7 @@ const options = yargs((hideBin(process.argv)))
     type: 'boolean'
   })
   .option('typescript', {
+    alias: 'ts',
     describe: 'generate typescript',
     type: 'boolean'
   })

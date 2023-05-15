@@ -34,21 +34,37 @@ export class DemoGenerator {
   }
 
   get devDependencies() {
-    return [
-      '@types/express',
-      '@types/express-ws',
-      '@types/node',
-      '@types/pg',
-      'typescript'
-    ]
+    let list = []
+
+    if (this.options.typescript) {
+      list.push(
+        '@types/express',
+        '@types/express-ws',
+        '@types/node',
+        '@types/pg',
+        'typescript'
+      )
+    }
+
+    return list
   }
 
   get build() {
-    return 'tsc && tailwindcss -i src/input.css -o public/index.css'
+    let steps = []
+
+    if (this.options.typescript) steps.push('tsc')
+
+    steps.push('tailwindcss -i src/input.css -o public/index.css')
+
+    return steps.join(' && ')
   }
 
   get start() {
-    return 'node build/server.js'
+    if (this.options.typescript) {
+      return 'node build/server.js'
+    } else {
+      return 'node server.js'
+    }
   }
 
   // render each template and write to the destination dir
@@ -86,6 +102,16 @@ export class DemoGenerator {
       execSync(`npm install --save-dev ${install.join(' ')}`, { stdio: 'inherit' })
     }
 
+    let uninstall = []
+    let dependencies = [...this.dependencies, ...this.devDependencies]
+    for (const pkg in {...pj.dependencies, ...pj.devDependencies}) {
+      if (!dependencies.includes(pkg)) uninstall.push(pkg)
+    }
+
+    if (uninstall.length !== 0) {
+      execSync(`npm uninstall ${uninstall.join(' ')}`, { stdio: 'inherit' })
+    }
+
     pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
     pj.scripts ||= {}
 
@@ -100,8 +126,16 @@ export class DemoGenerator {
       fs.writeFileSync('package.json', JSON.stringify(pj, null, 2))
     }
 
-    await this.#outputFile('tsconfig.json')
-    await this.#outputTemplate('server.ejs', 'src/server.ts')
+    if (options.typescript) {
+      await this.#outputFile('tsconfig.json')
+      await this.#rmFile('server.js')
+      await this.#outputTemplate('server.ejs', 'src/server.ts')
+    } else {
+      await this.#rmFile('tsconfig.json')
+      await this.#outputTemplate('server.ejs', 'server.js')
+      await this.#rmFile('src/server.ts')
+    }
+
     await this.#outputFile('index.html', 'views/index.ejs')
     await this.#outputFile('client.js', 'public/client.js')
     await this.#outputFile('tailwind.config.js')
@@ -205,6 +239,68 @@ export class DemoGenerator {
     } else {
       console.log(`${chalk.bold.green('create'.padStart(11, ' '))}  ${name}`)
       fs.writeFileSync(dest, proposed)
+    }
+
+    return dest
+  }
+
+  // remove file, prompting before doing so
+  async #rmFile(name) {
+    const dest = path.join(this.#appdir, name)
+
+    if (fs.statSync(dest, { throwIfNoEntry: false })) {
+      let prompt
+      let question
+
+      try {
+        if (this.#answer !== 'a') {
+          console.log(`${chalk.bold.red('exist'.padStart(11))}  ${name}`)
+
+          prompt = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+          })
+
+          // support node 16 which doesn't have a promisfied readline interface
+          question = query => {
+            return new Promise(resolve => {
+              prompt.question(query, resolve)
+            })
+          }
+        }
+
+        while (true) {
+          if (question) {
+            this.#answer = await question(`Remove ${dest}? (enter "h" for help) [Ynaqh] `)
+          }
+
+          switch (this.#answer.toLocaleLowerCase()) {
+            case '':
+            case 'y':
+            case 'a':
+              console.log(`${chalk.bold.yellow('remove'.padStart(11, ' '))}  ${name}`)
+              fs.unlinkSync(dest)
+              return dest
+
+            case 'n':
+              console.log(`${chalk.bold.yellow('skip'.padStart(11, ' '))}  ${name}`)
+              return dest
+
+            case 'q':
+              process.exit(0)
+              break
+
+            default:
+              console.log('        Y - yes, remove')
+              console.log('        n - no, do not remove')
+              console.log('        a - all, remove this and all others')
+              console.log('        q - quit, abort')
+              console.log('        h - help, show this help')
+          }
+        }
+      } finally {
+        if (prompt) prompt.close()
+      }
     }
 
     return dest

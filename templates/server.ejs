@@ -1,7 +1,14 @@
-import { Client } from 'pg';
-import * as express from 'express';
-import * as redis from 'redis';
-import * as expressWs from 'express-ws';
+<% if (options.typescript && !options.esm) { -%>
+import <% if (options.typescript) { %>* as <% } %>pg from 'pg';
+import <% if (options.typescript) { %>* as <% } %>express from 'express';
+import <% if (options.typescript) { %>* as <% } %>redis from 'redis';
+import <% if (options.typescript) { %>* as <% } %>expressWs from 'express-ws';
+<% } else { -%>
+const pg = require('pg')
+const express = require('express')
+const redis = require('redis')
+const expressWs = require('express-ws')
+<% } -%>
 
 // set up express and web socket
 const { app, getWss } = expressWs(express());
@@ -13,10 +20,12 @@ app.set('view engine', 'ejs');
 
 // common reconnect logic for postgres, redis clients
 const reconnect = {
-  client: null as any,
-  interval: null as NodeJS.Timer | null,
+  client: null<% if (options.typescript) { %> as any<% } %>,
+  interval: null<% if (options.typescript) { %> as NodeJS.Timer | null<% } %>,
+<% if (options.typescript) { -%>
   connect: null as Function | null,
   disconnect: null as Function | null,
+<% } -%>
 
   reconnect() {
     if (this.interval) return;
@@ -48,7 +57,9 @@ const reconnect = {
 // redis subscriber
 const subscriber = {
   ...reconnect,
+<% if (options.typescript) { -%>
   client: null as redis.RedisClientType | null,
+<% } -%>
 
   async connect() {
     this.client = redis.createClient({url: process.env.REDIS_URL});
@@ -56,7 +67,7 @@ const subscriber = {
     await this.client.connect();
 
     // Forward messages from redis to all websocket clients
-    this.client.subscribe('welcome:counter', (message: string) => {
+    this.client.subscribe('welcome:counter', (message<% if (options.typescript) { %> : string<% } %>) => {
       count = parseInt(message);
 
       wss.clients.forEach(client => {
@@ -64,7 +75,7 @@ const subscriber = {
       });
     }),
 
-    this.client.on('error', (err: object) => {
+    this.client.on('error', (err<% if (options.typescript) { %>: object<% } %>) => {
       console.error('Redis Server Error', err);
       this.disconnect();
       this.reconnect();
@@ -82,7 +93,9 @@ const subscriber = {
 // redis publisher
 const publisher = {
   ...reconnect,
+<% if (options.typescript) { -%>
   client: null as redis.RedisClientType | null,
+<% } -%>
 
   async connect() {
     this.client = redis.createClient({url: process.env.REDIS_URL});
@@ -101,10 +114,12 @@ const publisher = {
 // postgres client
 const postgres = {
   ...reconnect,
-  client: null as Client | null,
+<% if (options.typescript) { -%>
+  client: null as pg.Client | null,
+<% } -%>
 
   async connect() {
-    this.client = new Client({connectionString: process.env.DATABASE_URL})
+    this.client = new pg.Client({connectionString: process.env.DATABASE_URL})
 
     await this.client.connect();
   },
