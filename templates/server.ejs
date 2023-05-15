@@ -156,8 +156,10 @@ app.get('/', async (_request, response) => {
 <% } else { -%>
 // Map of file extensions to mime types
 const mimeTypes<% if (options.typescript) { %> : Record<string, string><% } %> = {
+  "ico": "image/x-icon",
   "js": "text/javascript",
-  "css": "text/css"
+  "css": "text/css",
+  "svg": "image/svg+xml"
 };
 
 // Process requests based on pathname

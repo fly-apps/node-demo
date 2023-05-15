@@ -30,6 +30,11 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use redis pub/sub',
     type: 'boolean'
   })
+  .option('tailwindcss', {
+    alias: ['tailwind', 'tw'],
+    describe: 'use tailwindcss',
+    type: 'boolean'
+  })
   .option('typescript', {
     alias: 'ts',
     describe: 'generate typescript',
