@@ -1,0 +1,169 @@
+import { Client } from 'pg';
+import * as express from 'express';
+import * as redis from 'redis';
+import * as expressWs from 'express-ws';
+
+// set up express and web socket
+const { app, getWss } = expressWs(express());
+const wss = getWss();
+
+// set up static content and ejs views
+app.use(express.static('public'))
+app.set('view engine', 'ejs');
+
+// common reconnect logic for postgres, redis clients
+const reconnect = {
+  client: null as any,
+  interval: null as NodeJS.Timer | null,
+  connect: null as Function | null,
+  disconnect: null as Function | null,
+
+  reconnect() {
+    if (this.interval) return;
+
+    this.interval = setInterval(() => {
+      this.tryConnect().catch(console.log)
+    }, 1000);
+  },
+
+  async tryConnect(reconnect = false) {
+    if (this.client || !this.connect || !this.disconnect) return;
+
+    try {
+      await this.connect();
+
+      if (this.interval) {
+        clearInterval(this.interval);
+        this.interval = null;
+      }
+    } catch (error) {
+      console.error(error);
+      this.disconnect();
+      if (reconnect) this.reconnect();
+      throw(error);
+    }
+  }
+}
+
+// redis subscriber
+const subscriber = {
+  ...reconnect,
+  client: null as redis.RedisClientType | null,
+
+  async connect() {
+    this.client = redis.createClient({url: process.env.REDIS_URL});
+
+    await this.client.connect();
+
+    // Forward messages from redis to all websocket clients
+    this.client.subscribe('welcome:counter', (message: string) => {
+      count = parseInt(message);
+
+      wss.clients.forEach(client => {
+        try { client.send(message) } catch {};
+      });
+    }),
+
+    this.client.on('error', (err: object) => {
+      console.error('Redis Server Error', err);
+      this.disconnect();
+      this.reconnect();
+    })
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.quit();
+      this.client = null;
+    }
+  }
+};
+
+// redis publisher
+const publisher = {
+  ...reconnect,
+  client: null as redis.RedisClientType | null,
+
+  async connect() {
+    this.client = redis.createClient({url: process.env.REDIS_URL});
+
+    await this.client.connect();
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.quit();
+      this.client = null;
+    }
+  }
+}
+
+// postgres client
+const postgres = {
+  ...reconnect,
+  client: null as Client | null,
+
+  async connect() {
+    this.client = new Client({connectionString: process.env.DATABASE_URL})
+
+    await this.client.connect();
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.end();
+      this.client = null;
+    }
+  }
+}
+
+// last known count
+let count = 0;
+
+// Main page
+app.get('/', async (_request, response) => {
+  if (postgres.client) {
+    // get current count (may return zero rows)
+    let result = await postgres.client.query('SELECT "count" from "welcome"');
+
+    // increment count, creating table row if necessary
+    if (!result.rows.length) {
+      count = 1;
+      await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count]);
+    } else {
+      count = result.rows[0].count + 1;
+      await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count]);
+    }
+
+    // publish new count on redis
+    publisher.client?.publish('welcome:counter', count.toString());
+  }
+
+  // render HTML response
+  response.render('index', { count });
+});
+
+// Define web socket route
+app.ws('/websocket', (ws) => {
+  // update client on a best effort basis
+  try { ws.send(count.toString()) } catch {};
+
+  // We don’t expect any messages on websocket, but log any ones we do get.
+  ws.on('message', console.log);
+});
+
+(async () => {
+  // try to connect to each service
+  await Promise.all([
+    subscriber.tryConnect(true),
+    publisher.tryConnect(true),
+    postgres.tryConnect(true)
+  ]);
+  
+  // Ensure welcome table exists
+  await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
+
+  // Start web server on port 3000
+  app.listen(3000);
+  console.log('Server is listening on port 3000');
+})();
