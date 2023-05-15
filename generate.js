@@ -23,14 +23,22 @@ export class DemoGenerator {
   #answer = ''
 
   get dependencies() {
-    return [
+    let list = []
+
+    list.push(
       'ejs',
-      'express',
-      'express-ws',
       'pg',
       'redis',
       'tailwindcss'
-    ]
+    )
+
+    if (this.options.express) {
+      list.push('express', 'express-ws')
+    } else {
+      list.push('ws')
+    }
+
+    return list
   }
 
   get devDependencies() {
@@ -44,6 +52,10 @@ export class DemoGenerator {
         '@types/pg',
         'typescript'
       )
+
+      if (!this.options.express) {
+        list.push('@types/ejs')
+      }
     }
 
     return list
@@ -68,12 +80,23 @@ export class DemoGenerator {
   }
 
   get imports() {
-    return {
+    let list = {
       pg: 'pg',
-      express: 'express',
-      expressWs: 'express-ws',
       redis: 'redis',
     }
+
+    if (this.options.express) {
+      list.express = 'express'
+      list.expressWs = 'express-ws'
+    } else {
+      list.http = 'node:http'
+      list.url = 'node:url'
+      list.fs = 'node:fs'
+      list.ejs = 'ejs'
+      list['{ WebSocketServer }'] = 'ws'
+    }
+
+    return list
   }
 
   // render each template and write to the destination dir

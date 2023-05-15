@@ -1,5 +1,5 @@
 <% for (const [name, pkg] of Object.entries(imports)) { -%>
-<% if (options.typescript && !options.esm) { -%>
+<% if (options.typescript && !options.esm && !name.includes('{')) { -%>
 import * as <%= name %> from '<%= pkg %>';
 <% } else if (options.typescript || options.esm) { -%>
 import <%= name %> from '<%= pkg %>';
@@ -8,6 +8,7 @@ const <%= name %> = require('<%= pkg %>');
 <% } -%>
 <% } -%>
 
+<% if (options.express) { -%>
 // set up express and web socket
 const { app, getWss } = expressWs(express());
 const wss = getWss();
@@ -15,6 +16,11 @@ const wss = getWss();
 // set up static content and ejs views
 app.use(express.static('public'))
 app.set('view engine', 'ejs');
+<% } else { -%>
+// set up web server
+const server = http.createServer(listener);
+const wss = new WebSocketServer({ noServer: true });
+<% } -%>
 
 // common reconnect logic for postgres, redis clients
 const reconnect = {
@@ -133,8 +139,43 @@ const postgres = {
 // last known count
 let count = 0;
 
+<% if (options.express) { -%>
 // Main page
 app.get('/', async (_request, response) => {
+<% } else { -%>
+// Map of file extensions to mime types
+const mimeTypes<% if (options.typescript) { %> : Record<string, string><% } %> = {
+  "js": "text/javascript",
+  "css": "text/css"
+};
+
+// Process requests based on pathname
+async function listener(request<% if (options.typescript) { %> : http.IncomingMessage<% } %>, response<% if (options.typescript) { %> : http.ServerResponse<% } %>) {
+  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>);
+  
+  if (pathname === '/') {
+    await main(request, response)
+  } else if (<% if (options.typescript) { %>pathname && <% } %>fs.existsSync(`public${pathname}`)) {
+    try {
+      let contents = fs.readFileSync(`public${pathname}`)
+      let mimeType = mimeTypes[pathname.split('.').pop()<% if (options.typescript) { %> as string<% } %>] || 'application/octet-stream'
+      
+      response.writeHead(200, { "Content-Type": mimeType });
+      response.write(contents, "binary");
+    } catch (error) {
+      response.writeHead(500, {"Content-Type": "text/plain"});
+      response.write(error + "\n");
+    }
+    response.end();
+  } else {
+    response.writeHead(400);
+    response.end("Not found.");
+  }
+}
+
+// Main page
+async function main(_request<% if (options.typescript) { %> : http.IncomingMessage<% } %>, response<% if (options.typescript) { %> : http.ServerResponse<% } %>) {
+<% } -%>
   if (postgres.client) {
     // get current count (may return zero rows)
     let result = await postgres.client.query('SELECT "count" from "welcome"');
@@ -153,11 +194,42 @@ app.get('/', async (_request, response) => {
   }
 
   // render HTML response
+<% if (options.express) { -%>
   response.render('index', { count });
-});
+<% } else { -%>
+  try {
+    let contents = fs.readFileSync(`views/index.ejs`, 'utf-8');
+    contents = ejs.render(contents, { count });
+
+    response.writeHead(200, { "Content-Type": "text/html" });
+    response.write(contents, "utf-8");
+  } catch (error) {
+    response.writeHead(500, {"Content-Type": "text/plain"});
+    response.write(error + "\n");
+  }
+
+  response.end();
+<% } -%>
+}<% if (options.express) { %>)<% } %>;
 
 // Define web socket route
+<% if (options.express) { -%>
 app.ws('/websocket', (ws) => {
+<% } else { -%>
+server.on('upgrade', (request, socket, head) => {
+  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>);
+
+  if (pathname === '/websocket') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+wss.on('connection', (ws) => {
+<% } -%>
   // update client on a best effort basis
   try { ws.send(count.toString()) } catch {};
 
@@ -177,6 +249,7 @@ app.ws('/websocket', (ws) => {
   await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
 
   // Start web server on port 3000
-  app.listen(3000);
-  console.log('Server is listening on port 3000');
+  <% if (options.express) { %>app<% } else { %>server<% } %>.listen(3000, () => {
+    console.log('Server is listening on port 3000');
+  });
 })();
