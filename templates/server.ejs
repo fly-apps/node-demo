@@ -1,13 +1,11 @@
+<% for (const [name, pkg] of Object.entries(imports)) { -%>
 <% if (options.typescript && !options.esm) { -%>
-import <% if (options.typescript) { %>* as <% } %>pg from 'pg';
-import <% if (options.typescript) { %>* as <% } %>express from 'express';
-import <% if (options.typescript) { %>* as <% } %>redis from 'redis';
-import <% if (options.typescript) { %>* as <% } %>expressWs from 'express-ws';
+import * as <%= name %> from '<%= pkg %>';
+<% } else if (options.typescript || options.esm) { -%>
+import <%= name %> from '<%= pkg %>';
 <% } else { -%>
-const pg = require('pg')
-const express = require('express')
-const redis = require('redis')
-const expressWs = require('express-ws')
+const <%= name %> = require('<%= pkg %>');
+<% } -%>
 <% } -%>
 
 // set up express and web socket

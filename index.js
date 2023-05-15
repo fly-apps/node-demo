@@ -14,6 +14,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'force overwrite of existing files',
     type: 'boolean'
   })
+  .option('esm', {
+    describe: 'use imports (es6) instead of require (cjs)',
+    type: 'boolean'
+  })
   .option('typescript', {
     alias: 'ts',
     describe: 'generate typescript',

@@ -56,7 +56,7 @@ export class DemoGenerator {
 
     steps.push('tailwindcss -i src/input.css -o public/index.css')
 
-    return steps.join(' && ')
+    return steps.length ? steps.join(' && ') : undefined
   }
 
   get start() {
@@ -64,6 +64,15 @@ export class DemoGenerator {
       return 'node build/server.js'
     } else {
       return 'node server.js'
+    }
+  }
+
+  get imports() {
+    return {
+      pg: 'pg',
+      express: 'express',
+      expressWs: 'express-ws',
+      redis: 'redis',
     }
   }
 
@@ -115,19 +124,31 @@ export class DemoGenerator {
     pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
     pj.scripts ||= {}
 
-    if (pj.scripts.build !== this.build || pj.scripts.start !== this.start) {
+    let update = false;
+    if (pj.scripts.build !== this.build) update = true
+    if (pj.scripts.start !== this.start) update = true
+    if (options.esm && pj.type !== 'module') update = true
+    if (!options.esm && pj.type) update = true
+
+    if (update) {
       pj.scripts.build = this.build
       pj.scripts.start = this.start
 
-      if (!this.build) delete this.build
-      if (!this.start) delete this.start
+      if (!this.build) delete pj.build
+      if (!this.start) delete pj.start
+
+      if (!options.esm) {
+        delete pj.type
+      } else if (pj.type !== 'module') {
+        pj.type = 'module'
+      }
 
       console.log(`${chalk.bold.green('update'.padStart(11, ' '))}  package.json`)
       fs.writeFileSync('package.json', JSON.stringify(pj, null, 2))
     }
 
     if (options.typescript) {
-      await this.#outputFile('tsconfig.json')
+      await this.#outputTemplate('tsconfig.json.ejs')
       await this.#rmFile('server.js')
       await this.#outputTemplate('server.ejs', 'src/server.ts')
     } else {
