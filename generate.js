@@ -26,11 +26,14 @@ export class DemoGenerator {
     let list = []
 
     list.push(
-      'ejs',
       'pg',
       'redis',
       'tailwindcss'
     )
+
+    if (this.options.ejs) {
+      list.push('ejs')
+    }
 
     if (this.options.express) {
       list.push('express', 'express-ws')
@@ -53,7 +56,7 @@ export class DemoGenerator {
         'typescript'
       )
 
-      if (!this.options.express) {
+      if (!this.options.express && this.options.ejs) {
         list.push('@types/ejs')
       }
     }
@@ -88,11 +91,12 @@ export class DemoGenerator {
     if (this.options.express) {
       list.express = 'express'
       list.expressWs = 'express-ws'
+      if (!this.options.ejs) list.fs = 'node:fs'
     } else {
       list.http = 'node:http'
       list.url = 'node:url'
       list.fs = 'node:fs'
-      list.ejs = 'ejs'
+      if (this.options.ejs) list.ejs = 'ejs'
       list['{ WebSocketServer }'] = 'ws'
     }
 

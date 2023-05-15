@@ -18,6 +18,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use imports (es6) instead of require (cjs)',
     type: 'boolean'
   })
+  .option('ejs', {
+    describe: 'use Embedded JavaScript templating (ejs)',
+    type: 'boolean'
+  })
   .option('express', {
     describe: 'use express web server',
     type: 'boolean'

@@ -13,9 +13,11 @@ const <%= name %> = require('<%= pkg %>');
 const { app, getWss } = expressWs(express());
 const wss = getWss();
 
-// set up static content and ejs views
-app.use(express.static('public'))
+// set up static content<% if (options.ejs) { %> and ejs views<% } %>
+app.use(express.static('public'));
+<% if (options.ejs) { -%>
 app.set('view engine', 'ejs');
+<% } -%>
 <% } else { -%>
 // set up web server
 const server = http.createServer(listener);
@@ -195,11 +197,26 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 
   // render HTML response
 <% if (options.express) { -%>
+<% if (options.ejs) { -%>
   response.render('index', { count });
 <% } else { -%>
   try {
+    let content = fs.readFileSync('views/index.ejs', 'utf-8')
+      .replace('<%%= count %>', count.toString());
+    response.set('Content-Type', 'text/html');
+    response.send(content)
+  } catch(error) {
+    response.send()
+  }
+<% } -%>
+<% } else { -%>
+  try {
     let contents = fs.readFileSync(`views/index.ejs`, 'utf-8');
+<% if (options.ejs) { -%>
     contents = ejs.render(contents, { count });
+<% } else { -%>
+    contents = contents.replace('<%%= count %>', count.toString());
+<% } -%>
 
     response.writeHead(200, { "Content-Type": "text/html" });
     response.write(contents, "utf-8");
