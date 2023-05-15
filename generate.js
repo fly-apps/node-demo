@@ -27,13 +27,11 @@ export class DemoGenerator {
 
     list.push(
       'pg',
-      'redis',
       'tailwindcss'
     )
 
-    if (this.options.ejs) {
-      list.push('ejs')
-    }
+    if (this.options.ejs) list.push('ejs')
+    if (this.options.redis) list.push('redis')
 
     if (this.options.express) {
       list.push('express', 'express-ws')
@@ -84,9 +82,10 @@ export class DemoGenerator {
 
   get imports() {
     let list = {
-      pg: 'pg',
-      redis: 'redis',
+      pg: 'pg'
     }
+
+    if (this.options.redis) list.redis = 'redis'
 
     if (this.options.express) {
       list.express = 'express'

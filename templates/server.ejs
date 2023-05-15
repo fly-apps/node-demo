@@ -24,11 +24,16 @@ const server = http.createServer(listener);
 const wss = new WebSocketServer({ noServer: true });
 <% } -%>
 
+<% if (options.redis) { -%>
 // common reconnect logic for postgres, redis clients
 const reconnect = {
   client: null<% if (options.typescript) { %> as any<% } %>,
+<% } else { -%>
+// postgres client
+const postgres = {
+<% } -%>
   interval: null<% if (options.typescript) { %> as NodeJS.Timer | null<% } %>,
-<% if (options.typescript) { -%>
+<% if (options.typescript && options.redis) { -%>
   connect: null as Function | null,
   disconnect: null as Function | null,
 <% } -%>
@@ -57,8 +62,11 @@ const reconnect = {
       if (reconnect) this.reconnect();
       throw(error);
     }
-  }
+  }<% if (!options.redis) { -%>,
+
+<% } else { %>
 }
+
 
 // redis subscriber
 const subscriber = {
@@ -120,6 +128,7 @@ const publisher = {
 // postgres client
 const postgres = {
   ...reconnect,
+<% } -%>
 <% if (options.typescript) { -%>
   client: null as pg.Client | null,
 <% } -%>
@@ -190,9 +199,16 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
       count = result.rows[0].count + 1;
       await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count]);
     }
+<% if (options.redis) { -%>
 
     // publish new count on redis
     publisher.client?.publish('welcome:counter', count.toString());
+<% } else { -%>
+    // publis new count to all websocket clients
+    wss.clients.forEach(client => {
+      try { client.send(count.toString()) } catch {};
+    });
+<% } -%>
   }
 
   // render HTML response
@@ -255,12 +271,17 @@ wss.on('connection', (ws) => {
 });
 
 (async () => {
+<% if (options.redis) { -%>
   // try to connect to each service
   await Promise.all([
     subscriber.tryConnect(true),
     publisher.tryConnect(true),
     postgres.tryConnect(true)
   ]);
+<% } else { -%>
+  // try to connect to postgres
+  await postgres.tryConnect(true);
+<% } -%>
   
   // Ensure welcome table exists
   await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
