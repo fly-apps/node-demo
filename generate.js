@@ -34,8 +34,9 @@ export class DemoGenerator {
     if (this.options.redis) list.push('redis')
 
     if (this.options.express) {
-      list.push('express', 'express-ws')
-    } else {
+      list.push('express')
+      if (this.options.ws) list.push('express-ws')
+    } else if (this.options.ws) {
       list.push('ws')
     }
 
@@ -47,14 +48,15 @@ export class DemoGenerator {
 
     if (this.options.typescript) {
       list.push(
-        '@types/express',
-        '@types/express-ws',
         '@types/node',
         '@types/pg',
         'typescript'
       )
 
-      if (!this.options.express && this.options.ejs) {
+      if (this.options.express) {
+        list.push('@types/express')
+        if (this.options.ws) list.push('@types/express-ws')
+      } else if (this.options.ejs) {
         list.push('@types/ejs')
       }
     }
@@ -93,14 +95,14 @@ export class DemoGenerator {
 
     if (this.options.express) {
       list.express = 'express'
-      list.expressWs = 'express-ws'
+      if (this.options.ws) list.expressWs = 'express-ws'
       if (!this.options.ejs) list.fs = 'node:fs'
     } else {
       list.http = 'node:http'
       list.url = 'node:url'
       list.fs = 'node:fs'
       if (this.options.ejs) list.ejs = 'ejs'
-      list['{ WebSocketServer }'] = 'ws'
+      if (this.options.ws) list['{ WebSocketServer }'] = 'ws'
     }
 
     return list
@@ -112,6 +114,8 @@ export class DemoGenerator {
     this.#appdir = appdir
 
     if (options.force) this.#answer = 'a'
+
+    if (options.redis) options.ws = true
 
     let pj = {}
 

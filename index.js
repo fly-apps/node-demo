@@ -40,6 +40,11 @@ const options = yargs((hideBin(process.argv)))
     describe: 'generate typescript',
     type: 'boolean'
   })
+  .option('websocket', {
+    alias: 'ws',
+    describe: 'use websockets for real-time updates',
+    type: 'boolean'
+  })
   .parse()
 
 // generate dockerfile and related artifacts

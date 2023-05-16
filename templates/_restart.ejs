@@ -1,0 +1,121 @@
+<% if (options.redis) { -%>
+// common reconnect logic for postgres, redis clients
+const reconnect = {
+  client: null<% if (options.typescript) { %> as any<% } %>,
+<% } else { -%>
+// postgres client
+const postgres = {
+<% } -%>
+  interval: null<% if (options.typescript) { %> as NodeJS.Timer | null<% } %>,
+<% if (options.typescript && options.redis) { -%>
+  connect: null as Function | null,
+  disconnect: null as Function | null,
+<% } -%>
+
+  reconnect() {
+    if (this.interval) return;
+
+    this.interval = setInterval(() => {
+      this.tryConnect().catch(console.log)
+    }, 1000);
+  },
+
+  async tryConnect(reconnect = false) {
+    if (this.client || !this.connect || !this.disconnect) return;
+
+    try {
+      await this.connect();
+
+      if (this.interval) {
+        clearInterval(this.interval);
+        this.interval = null;
+      }
+    } catch (error) {
+      console.error(error);
+      this.disconnect();
+      if (reconnect) this.reconnect();
+      throw(error);
+    }
+  }<% if (!options.redis) { -%>,
+<% } else { %>
+}
+
+
+// redis subscriber
+const subscriber = {
+  ...reconnect,
+<% if (options.typescript) { -%>
+  client: null as redis.RedisClientType | null,
+<% } -%>
+
+  async connect() {
+    this.client = redis.createClient({url: process.env.REDIS_URL});
+
+    await this.client.connect();
+
+    // Forward messages from redis to all websocket clients
+    this.client.subscribe('welcome:counter', (message<% if (options.typescript) { %> : string<% } %>) => {
+      count = parseInt(message);
+
+      wss.clients.forEach(client => {
+        try { client.send(message) } catch {};
+      });
+    }),
+
+    this.client.on('error', (err<% if (options.typescript) { %>: object<% } %>) => {
+      console.error('Redis Server Error', err);
+      this.disconnect();
+      this.reconnect();
+    })
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.quit();
+      this.client = null;
+    }
+  }
+};
+
+// redis publisher
+const publisher = {
+  ...reconnect,
+<% if (options.typescript) { -%>
+  client: null as redis.RedisClientType | null,
+<% } -%>
+
+  async connect() {
+    this.client = redis.createClient({url: process.env.REDIS_URL});
+
+    await this.client.connect();
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.quit();
+      this.client = null;
+    }
+  }
+}
+
+// postgres client
+const postgres = {
+  ...reconnect,
+<% } -%>
+<% if (options.typescript) { -%>
+  client: null as pg.Client | null,
+<% } -%>
+
+  async connect() {
+    this.client = new pg.Client({connectionString: process.env.DATABASE_URL})
+
+    await this.client.connect();
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.end();
+      this.client = null;
+    }
+  }
+}
