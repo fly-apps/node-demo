@@ -1,0 +1,24 @@
+<% if (options.postgres) { -%>
+  if (postgres.client) {
+    // get current count (may return zero rows)
+    let result = await postgres.client.query('SELECT "count" from "welcome"');
+
+    // increment count, creating table row if necessary
+    if (!result.rows.length) {
+      count = 1;
+      await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count]);
+    } else {
+      count = result.rows[0].count + 1;
+      await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count]);
+    }
+  }
+<% } else { -%>
+  // increment counter in counter.txt file
+  try {
+    count = parseInt(fs.readFileSync('counter.txt', 'utf-8')) + 1;
+  } catch {
+    count = 1;
+  }
+
+  fs.writeFileSync('counter.txt', count.toString());
+<% } -%>

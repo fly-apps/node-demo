@@ -30,6 +30,11 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use redis pub/sub',
     type: 'boolean'
   })
+  .option('postgresql', {
+    alias: ['postgres', 'pg'],
+    describe: 'use postgresdb',
+    type: 'boolean'
+  })
   .option('tailwindcss', {
     alias: ['tailwind', 'tw'],
     describe: 'use tailwindcss',

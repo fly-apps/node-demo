@@ -26,11 +26,8 @@ export class DemoGenerator {
   get dependencies() {
     let list = []
 
-    list.push(
-      'pg',
-    )
-
     if (this.options.ejs) list.push('ejs')
+    if (this.options.postgres) list.push('pg')
     if (this.options.redis) list.push('redis')
 
     if (this.options.express) {
@@ -56,8 +53,9 @@ export class DemoGenerator {
       if (this.options.express) {
         list.push('@types/express')
         if (this.options.ws) list.push('@types/express-ws')
-      } else if (this.options.ejs) {
-        list.push('@types/ejs')
+      } else {
+        if (this.options.ejs) list.push('@types/ejs')
+        if (this.options.ws) list.push('@types/ws')
       }
     }
 
@@ -87,8 +85,12 @@ export class DemoGenerator {
   }
 
   get imports() {
-    let list = {
-      pg: 'pg'
+    let list = {}
+
+    if (this.options.postgres) {
+      list.pg = 'pg'
+    } else {
+      list.fs = 'node:fs'
     }
 
     if (this.options.redis) list.redis = 'redis'
