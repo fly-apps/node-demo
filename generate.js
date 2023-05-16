@@ -105,7 +105,9 @@ export class DemoGenerator {
       if (this.options.ws) list['{ WebSocketServer }'] = 'ws'
     }
 
-    return list
+    return Object.fromEntries(Object.entries(list).sort((a,b) => {
+      return a[0].localeCompare(b[0]);
+    }))
   }
 
   // render each template and write to the destination dir
