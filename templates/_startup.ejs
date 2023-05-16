@@ -1,0 +1,31 @@
+<% if (options.redis || options.postgres) { -%>
+(async () => {
+<% if (options.redis) { -%>
+  // try to connect to each service
+  await Promise.all([
+    subscriber.tryConnect(true),
+    publisher.tryConnect(true)<% if (options.postgres) { %>,
+    postgres.tryConnect(true)<% } %>
+  ]);
+
+<% } else if (options.postgres) { -%>
+  // try to connect to postgres
+  await postgres.tryConnect(true);
+
+<% } -%>
+<% if (options.postgres) { -%>
+  // Ensure welcome table exists
+  await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
+  
+<% } -%>
+  // Start web server on port 3000
+  <% if (options.express) { %>app<% } else { %>server<% } %>.listen(3000, () => {
+    console.log('Server is listening on port 3000');
+  });
+})();
+<% } else { -%>
+// Start web server on port 3000
+<% if (options.express) { %>app<% } else { %>server<% } %>.listen(3000, () => {
+  console.log('Server is listening on port 3000');
+});
+<% } %>

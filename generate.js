@@ -76,6 +76,14 @@ export class DemoGenerator {
     return steps.length ? steps.join(' && ') : undefined
   }
 
+  get count() {
+    if (this.options.ejs) {
+      return '<%= count %>'
+    } else {
+      return '@@COUNT@@'
+    }
+  }
+
   get start() {
     if (this.options.typescript) {
       return 'node build/server.js'
@@ -195,27 +203,38 @@ export class DemoGenerator {
       await this.#rmFile('src/server.ts')
     }
 
-    await this.#outputFile('client.js', 'public/client.js')
+    if (options.ws) {
+      await this.#outputFile('client.js', 'public/client.js')
+    } else {
+      await this.#rmFile('public/client.js')
+    }
+
     await this.#outputFile('favicon.ico', 'public/favicon.ico')
     await this.#outputFile('brandmark-light.svg', 'public/brandmark-light.svg')
 
     if (this.options.tailwindcss) {
-      await this.#outputFile('index.html', 'views/index.ejs')
-      await this.#outputFile('tailwind.config.js')
+      await this.#outputTemplate('tailwind.config.js')
       await this.#outputFile('input.css', 'src/input.css')
+      await this.#outputTemplate('index.html', `views/index.${options.ejs ? 'ejs' : 'tmpl'}`)
+      await this.#rmFile('index.html', `views/index.${options.ejs ? 'tmpl' : 'ejs'}`)
     } else {
-      let proposed = fs.readFileSync(path.join(DemoGenerator.templates, 'index.html'), 'utf-8')
+      let proposed = await ejs.renderFile(path.join(DemoGenerator.templates, 'index.html'), this)
       let names = ['container', 'image', 'counter']
       let input = "@tailwind base;\n@layer base {\n"
+
       for (let match of proposed.matchAll(/class="(.*?)"/g)) {
         input = input + `.${names[0]} {@apply ${match[1]};}\n`
         proposed = proposed.replace(match[1], names.shift())
       }
-      await this.#writeFile('views/index.ejs', proposed)
+
+      await this.#writeFile(`views/index.${options.ejs ? 'ejs' : 'tmpl'}`, proposed)
+      await this.#rmFile(`views/index.${options.ejs ? 'tmpl' : 'ejs'}`)
 
       let tmpdir = os.tmpdir()
       fs.writeFileSync(`${tmpdir}/input.css`, input + '}')
-      execSync(`npx tailwindcss -c ${DemoGenerator.templates}/tailwind.config.js -i ${tmpdir}/input.css -o ${tmpdir}/index.css`, { stdio: 'pipe' })
+      let config = await ejs.renderFile(path.join(DemoGenerator.templates, 'tailwind.config.js'), this)
+      fs.writeFileSync(`${tmpdir}/tailwind.config.js`, config)
+      execSync(`npx tailwindcss -c ${tmpdir}/tailwind.config.js -i ${tmpdir}/input.css -o ${tmpdir}/index.css`, { stdio: 'pipe' })
       proposed = fs.readFileSync(path.join(tmpdir, 'index.css'), 'utf-8')
       await this.#writeFile('public/index.css', proposed)
 
@@ -224,7 +243,7 @@ export class DemoGenerator {
 
       await fs.unlinkSync(`${tmpdir}/input.css`)
       await fs.unlinkSync(`${tmpdir}/index.css`)
-
+      await fs.unlinkSync(`${tmpdir}/tailwind.config.js`)
     }
   }
 

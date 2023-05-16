@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"> 
     <link href="index.css" rel="stylesheet">
+<% if (options.ws) { -%>
     <script src="client.js" defer></script>
+<% } -%>
   </head>
 
   <body>
@@ -12,7 +14,7 @@
       <img src="brandmark-light.svg" class="h-[50vh]" alt="The monochrome white Fly.io brandmark on a navy background" srcset="">
 
       <div class="text-white text-[40vh] p-[10vh]" id="counter">
-        <%= count %>
+        <%- count %>
       </div>
     </div>
   </body>

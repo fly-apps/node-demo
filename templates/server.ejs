@@ -104,7 +104,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } else { -%>
   try {
     let content = fs.readFileSync('views/index.ejs', 'utf-8')
-      .replace('<%%= count %>', count.toString());
+      .replace('<%= count %>', count.toString());
     response.set('Content-Type', 'text/html');
     response.send(content)
   } catch(error) {
@@ -113,11 +113,11 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <% } else { -%>
   try {
-    let contents = fs.readFileSync(`views/index.ejs`, 'utf-8');
+    let contents = fs.readFileSync(`views/index.<% if (options.ejs) { %>ejs<% } else { %>tmpl<% } %>`, 'utf-8');
 <% if (options.ejs) { -%>
     contents = ejs.render(contents, { count });
 <% } else { -%>
-    contents = contents.replace('<%%= count %>', count.toString());
+    contents = contents.replace('<%= count %>', count.toString());
 <% } -%>
 
     response.writeHead(200, { "Content-Type": "text/html" });
