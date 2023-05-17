@@ -34,6 +34,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use redis pub/sub',
     type: 'boolean'
   })
+  .option('pnpm', {
+    describe: 'use pnpm as the package manager',
+    type: 'boolean'
+  })
   .option('postgresql', {
     alias: ['postgres', 'pg'],
     describe: 'use postgresdb',
@@ -61,6 +65,10 @@ const options = yargs((hideBin(process.argv)))
   .option('websocket', {
     alias: 'ws',
     describe: 'use websockets for real-time updates',
+    type: 'boolean'
+  })
+  .option('yarn', {
+    describe: 'use yarn as the package manager',
     type: 'boolean'
   })
   .parse()

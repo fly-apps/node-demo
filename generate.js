@@ -170,13 +170,31 @@ export class DemoGenerator {
     pj.dependencies ||= {}
     pj.devDependencies ||= {}
 
+    // remove lock files from other package managers
+    if (options.pnpm) {
+      this.#rmFile('package-lock.json')
+      this.#rmFile('yarn.lock')
+    } else if (options.yarn) {
+      this.#rmFile('package-lock.json')
+      this.#rmFile('pnpm-lock.yaml')
+    } else {
+      this.#rmFile('pnpm-lock.yaml')
+      this.#rmFile('yarn.lock')
+    }
+
     let install = []
     for (const pkg of this.dependencies) {
       if (!pj.dependencies[pkg]) install.push(pkg)
     }
 
     if (install.length !== 0) {
-      execSync(`npm install ${install.join(' ')}`, { stdio: 'inherit' })
+      if (options.pnpm) {
+        execSync(`pnpm add ${install.join(' ')}`, { stdio: 'inherit' })
+      } else if (options.yarn) {
+        execSync(`yarn add ${install.join(' ')}`, { stdio: 'inherit' })
+      } else {
+        execSync(`npm install ${install.join(' ')}`, { stdio: 'inherit' })
+      }
     }
 
     install = []
@@ -185,7 +203,13 @@ export class DemoGenerator {
     }
 
     if (install.length !== 0) {
-      execSync(`npm install --save-dev ${install.join(' ')}`, { stdio: 'inherit' })
+      if (options.pnpm) {
+        execSync(`pnpm add -D ${install.join(' ')}`, { stdio: 'inherit' })
+      } else if (options.yarn) {
+        execSync(`yarn add ${install.join(' ')} --dev`, { stdio: 'inherit' })
+      } else {
+        execSync(`npm install --save-dev ${install.join(' ')}`, { stdio: 'inherit' })
+      }
     }
 
     let uninstall = []
@@ -196,7 +220,28 @@ export class DemoGenerator {
     }
 
     if (uninstall.length !== 0) {
-      execSync(`npm uninstall ${uninstall.join(' ')}`, { stdio: 'inherit' })
+      if (options.pnpm) {
+        execSync(`pnpm remove ${install.join(' ')}`, { stdio: 'inherit' })
+      } else if (options.yarn) {
+        execSync(`yarn remove ${install.join(' ')}`, { stdio: 'inherit' })
+      } else {
+        execSync(`npm uninstall ${uninstall.join(' ')}`, { stdio: 'inherit' })
+      }
+    }
+
+    // remove lock files from other package managers
+    if (options.pnpm) {
+      if (!fs.existsSync('pnpm-lock.yaml')) {
+        execSync(`pnpm install`, { stdio: 'inherit' })
+      }
+    } else if (options.yarn) {
+      if (!fs.existsSync('yarn.lock')) {
+        execSync(`yarn install`, { stdio: 'inherit' })
+      }
+    } else {
+      if (!fs.existsSync('package-lock.json')) {
+        execSync(`npm install`, { stdio: 'inherit' })
+      }
     }
 
     pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
@@ -282,9 +327,13 @@ export class DemoGenerator {
       await this.#rmFile('tailwind.config.js')
       await this.#rmFile('src/input.css')
 
-      await fs.unlinkSync(`${tmpdir}/input.css`)
-      await fs.unlinkSync(`${tmpdir}/index.css`)
-      await fs.unlinkSync(`${tmpdir}/tailwind.config.js`)
+      fs.unlinkSync(`${tmpdir}/input.css`)
+      fs.unlinkSync(`${tmpdir}/index.css`)
+      fs.unlinkSync(`${tmpdir}/tailwind.config.js`)
+
+      if (!fs.existsSync('.git')) {
+        execSync('git init', { stdio: 'inherit' })
+      }
     }
   }
 
