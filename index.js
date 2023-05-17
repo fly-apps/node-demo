@@ -27,7 +27,11 @@ const options = yargs((hideBin(process.argv)))
     type: 'boolean'
   })
   .option('knex', {
-    describe: 'use knex',
+    describe: 'use knex ORM for databases',
+    type: 'boolean'
+  })
+  .option('htmx', {
+    describe: 'use htmx for socket updates',
     type: 'boolean'
   })
   .option('mustache', {
@@ -44,7 +48,7 @@ const options = yargs((hideBin(process.argv)))
     type: 'boolean'
   })
   .option('prisma', {
-    describe: 'use prisma',
+    describe: 'use prisma ORM for databases',
     type: 'boolean'
   })
   .option('redis', {

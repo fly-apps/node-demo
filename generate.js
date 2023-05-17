@@ -24,7 +24,7 @@ export class DemoGenerator {
   #answer = ''
 
   get dependencies() {
-    let list = []
+    const list = []
 
     if (this.options.ejs) list.push('ejs')
     if (this.options.postgres) list.push('pg')
@@ -46,7 +46,7 @@ export class DemoGenerator {
   }
 
   get devDependencies() {
-    let list = []
+    const list = []
 
     if (this.options.typescript) {
       list.push(
@@ -70,7 +70,7 @@ export class DemoGenerator {
   }
 
   get build() {
-    let steps = []
+    const steps = []
 
     if (this.options.typescript) steps.push('tsc')
 
@@ -97,9 +97,9 @@ export class DemoGenerator {
 
   get orm() {
     if (this.options.prisma || this.options.knex) {
-      return true;
-     } else {
-      return false;
+      return true
+    } else {
+      return false
     }
   }
 
@@ -118,7 +118,7 @@ export class DemoGenerator {
   }
 
   get imports() {
-    let list = {}
+    const list = {}
 
     if (this.options.prisma) {
       list['{ PrismaClient }'] = '@prisma/client'
@@ -153,8 +153,8 @@ export class DemoGenerator {
       if (this.options.ws) list['{ WebSocketServer }'] = 'ws'
     }
 
-    return Object.fromEntries(Object.entries(list).sort((a,b) => {
-      return a[0].localeCompare(b[0]);
+    return Object.fromEntries(Object.entries(list).sort((a, b) => {
+      return a[0].localeCompare(b[0])
     }))
   }
 
@@ -224,9 +224,9 @@ export class DemoGenerator {
       }
     }
 
-    let uninstall = []
-    let dependencies = [...this.dependencies, ...this.devDependencies]
-    for (const pkg in {...pj.dependencies, ...pj.devDependencies}) {
+    const uninstall = []
+    const dependencies = [...this.dependencies, ...this.devDependencies]
+    for (const pkg in { ...pj.dependencies, ...pj.devDependencies }) {
       if (pkg === '@flydotio/dockerfile') continue
       if (!dependencies.includes(pkg)) uninstall.push(pkg)
     }
@@ -244,22 +244,22 @@ export class DemoGenerator {
     // remove lock files from other package managers
     if (options.pnpm) {
       if (!fs.existsSync('pnpm-lock.yaml')) {
-        execSync(`pnpm install`, { stdio: 'inherit' })
+        execSync('pnpm install', { stdio: 'inherit' })
       }
     } else if (options.yarn) {
       if (!fs.existsSync('yarn.lock')) {
-        execSync(`yarn install`, { stdio: 'inherit' })
+        execSync('yarn install', { stdio: 'inherit' })
       }
     } else {
       if (!fs.existsSync('package-lock.json')) {
-        execSync(`npm install`, { stdio: 'inherit' })
+        execSync('npm install', { stdio: 'inherit' })
       }
     }
 
     pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
     pj.scripts ||= {}
 
-    let update = false;
+    let update = false
     if (pj.scripts.build !== this.build) update = true
     if (pj.scripts.start !== this.start) update = true
     if (options.esm && pj.type !== 'module') update = true
@@ -296,12 +296,11 @@ export class DemoGenerator {
       await this.#outputTemplate('schema.prisma', 'prisma/schema.prisma')
 
       if (!fs.existsSync('prisma/migrations')) {
-        DATABASE_URL="postgresql://janedoe:janedoe@localhost:5432/janedoe?schema=hello-prisma"
         execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
       }
     }
 
-    if (options.ws) {
+    if (options.ws && !options.htmx) {
       await this.#outputFile('client.js', 'public/client.js')
     } else {
       await this.#rmFile('public/client.js')
@@ -310,30 +309,30 @@ export class DemoGenerator {
     await this.#outputFile('favicon.ico', 'public/favicon.ico')
     await this.#outputFile('brandmark-light.svg', 'public/brandmark-light.svg')
 
-    let extensions = ['tmpl', 'ejs', 'mustache']
+    const extensions = ['tmpl', 'ejs', 'mustache']
 
     if (this.options.tailwindcss) {
       await this.#outputTemplate('tailwind.config.js')
       await this.#outputFile('input.css', 'src/input.css')
 
-      for (let extension of extensions) {
+      for (const extension of extensions) {
         if (extension === this.templateExtension) {
-          await this.#outputTemplate('index.html',`views/index.${extension}`)
+          await this.#outputTemplate('index.html', `views/index.${extension}`)
         } else {
           await this.#rmFile(`views/index.${extension}`)
         }
       }
     } else {
       let proposed = await ejs.renderFile(path.join(DemoGenerator.templates, 'index.html'), this)
-      let names = ['container', 'image', 'counter']
-      let input = "@tailwind base;\n@layer base {\n"
+      const names = ['container', 'image', 'counter']
+      let input = '@tailwind base;\n@layer base {\n'
 
-      for (let match of proposed.matchAll(/class="(.*?)"/g)) {
+      for (const match of proposed.matchAll(/class="(.*?)"/g)) {
         input = input + `.${names[0]} {@apply ${match[1]};}\n`
         proposed = proposed.replace(match[1], names.shift())
       }
 
-      for (let extension of extensions) {
+      for (const extension of extensions) {
         if (extension === this.templateExtension) {
           await this.#writeFile(`views/index.${extension}`, proposed)
         } else {
@@ -341,9 +340,9 @@ export class DemoGenerator {
         }
       }
 
-      let tmpdir = os.tmpdir()
+      const tmpdir = os.tmpdir()
       fs.writeFileSync(`${tmpdir}/input.css`, input + '}')
-      let config = await ejs.renderFile(path.join(DemoGenerator.templates, 'tailwind.config.js'), this)
+      const config = await ejs.renderFile(path.join(DemoGenerator.templates, 'tailwind.config.js'), this)
       fs.writeFileSync(`${tmpdir}/tailwind.config.js`, config)
       execSync(`npx tailwindcss -c ${tmpdir}/tailwind.config.js -i ${tmpdir}/input.css -o ${tmpdir}/index.css`, { stdio: 'pipe' })
       proposed = fs.readFileSync(path.join(tmpdir, 'index.css'), 'utf-8')

@@ -117,8 +117,11 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
     publisher.client?.publish('welcome:counter', count.toString());
 <% } else { -%>
     // publish new count to all websocket clients
+<% if (options.htmx) { -%>
+    const message = `<div id="counter" hx-swap-oob="innerHTML">${count}</div>`
+<% } -%>
     wss.clients.forEach(client => {
-      try { client.send(count.toString()) } catch {};
+      try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {};
     });
 <% } -%>
   }
