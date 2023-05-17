@@ -1,5 +1,5 @@
 module.exports = {
-  content: ['./views/**/*.<% if (options.ejs) { %>ejs<% } else { %>tmpl<% } %>'],
+  content: ['./views/**/*.<%= templateExtension %>'],
   theme: {
     extend: {}
   },

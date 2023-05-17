@@ -36,8 +36,10 @@ export class DemoGenerator {
     if (this.options.express) {
       list.push('express')
       if (this.options.ws) list.push('express-ws')
-    } else if (this.options.ws) {
-      list.push('ws')
+      if (this.options.mustache) list.push('mustache-express')
+    } else {
+      if (this.options.ws) list.push('ws')
+      if (this.options.mustache) list.push('mustache')
     }
 
     return list
@@ -84,7 +86,9 @@ export class DemoGenerator {
   }
 
   get count() {
-    if (this.options.ejs) {
+    if (this.options.mustache) {
+      return '{{ count }}'
+    } else if (this.options.ejs) {
       return '<%= count %>'
     } else {
       return '@@COUNT@@'
@@ -97,6 +101,12 @@ export class DemoGenerator {
      } else {
       return false;
     }
+  }
+
+  get templateExtension() {
+    if (this.options.ejs) return 'ejs'
+    if (this.options.mustache) return 'mustache'
+    return 'tmpl'
   }
 
   get start() {
@@ -133,11 +143,13 @@ export class DemoGenerator {
       list.express = 'express'
       if (this.options.ws) list.expressWs = 'express-ws'
       if (!this.options.ejs) list.fs = 'node:fs'
+      if (this.options.mustache) list.mustacheExpress = 'mustache-express'
     } else {
       list.http = 'node:http'
       list.url = 'node:url'
       list.fs = 'node:fs'
       if (this.options.ejs) list.ejs = 'ejs'
+      if (this.options.mustache) list.mustache = 'mustache'
       if (this.options.ws) list['{ WebSocketServer }'] = 'ws'
     }
 
@@ -298,11 +310,19 @@ export class DemoGenerator {
     await this.#outputFile('favicon.ico', 'public/favicon.ico')
     await this.#outputFile('brandmark-light.svg', 'public/brandmark-light.svg')
 
+    let extensions = ['tmpl', 'ejs', 'mustache']
+
     if (this.options.tailwindcss) {
       await this.#outputTemplate('tailwind.config.js')
       await this.#outputFile('input.css', 'src/input.css')
-      await this.#outputTemplate('index.html', `views/index.${options.ejs ? 'ejs' : 'tmpl'}`)
-      await this.#rmFile('index.html', `views/index.${options.ejs ? 'tmpl' : 'ejs'}`)
+
+      for (let extension of extensions) {
+        if (extension === this.templateExtension) {
+          await this.#outputTemplate('index.html',`views/index.${extension}`)
+        } else {
+          await this.#rmFile(`views/index.${extension}`)
+        }
+      }
     } else {
       let proposed = await ejs.renderFile(path.join(DemoGenerator.templates, 'index.html'), this)
       let names = ['container', 'image', 'counter']
@@ -313,8 +333,13 @@ export class DemoGenerator {
         proposed = proposed.replace(match[1], names.shift())
       }
 
-      await this.#writeFile(`views/index.${options.ejs ? 'ejs' : 'tmpl'}`, proposed)
-      await this.#rmFile(`views/index.${options.ejs ? 'tmpl' : 'ejs'}`)
+      for (let extension of extensions) {
+        if (extension === this.templateExtension) {
+          await this.#writeFile(`views/index.${extension}`, proposed)
+        } else {
+          await this.#rmFile(`views/index.${extension}`)
+        }
+      }
 
       let tmpdir = os.tmpdir()
       fs.writeFileSync(`${tmpdir}/input.css`, input + '}')

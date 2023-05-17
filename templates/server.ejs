@@ -18,9 +18,12 @@ const wss = getWss();
 const app = express();
 <% } -%>
 
-// set up static content<% if (options.ejs) { %> and ejs views<% } %>
+// set up static content<% if (options.mustache) { %>and mustache views<% } else if (options.ejs) { %> and ejs views<% } %>
 app.use(express.static('public'));
-<% if (options.ejs) { -%>
+<% if (options.mustache) { -%>
+app.engine('mustache', mustacheExpress());
+app.set('view engine', 'mustache');
+<% } else if (options.ejs) { -%>
 app.set('view engine', 'ejs');
 <% } -%>
 <% } else { -%>
@@ -123,7 +126,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
   // render HTML response
 <% if (options.express) { -%>
-<% if (options.ejs) { -%>
+<% if (options.ejs || options.mustache) { -%>
   response.render('index', { count });
 <% } else { -%>
   try {

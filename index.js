@@ -30,8 +30,8 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use knex',
     type: 'boolean'
   })
-  .option('redis', {
-    describe: 'use redis pub/sub',
+  .option('mustache', {
+    describe: 'use mustache templates',
     type: 'boolean'
   })
   .option('pnpm', {
@@ -45,6 +45,10 @@ const options = yargs((hideBin(process.argv)))
   })
   .option('prisma', {
     describe: 'use prisma',
+    type: 'boolean'
+  })
+  .option('redis', {
+    describe: 'use redis pub/sub',
     type: 'boolean'
   })
   .option('sqlite', {
