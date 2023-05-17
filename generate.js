@@ -28,6 +28,7 @@ export class DemoGenerator {
 
     if (this.options.ejs) list.push('ejs')
     if (this.options.postgres) list.push('pg')
+    if (this.options.sqlite3) list.push('sqlite3')
     if (this.options.redis) list.push('redis')
 
     if (this.options.express) {
@@ -97,6 +98,8 @@ export class DemoGenerator {
 
     if (this.options.postgres) {
       list.pg = 'pg'
+    } else if (this.options.sqlite3) {
+      list.sqlite3 = 'sqlite3'
     } else {
       list.fs = 'node:fs'
     }

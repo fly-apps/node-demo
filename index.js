@@ -35,6 +35,11 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use postgresdb',
     type: 'boolean'
   })
+  .option('sqlite', {
+    alias: ['sqlite3'],
+    describe: 'use sqlite3',
+    type: 'boolean'
+  })
   .option('tailwindcss', {
     alias: ['tailwind', 'tw'],
     describe: 'use tailwindcss',
