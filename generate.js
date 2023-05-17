@@ -31,6 +31,7 @@ export class DemoGenerator {
     if (this.options.sqlite3) list.push('sqlite3')
     if (this.options.redis) list.push('redis')
     if (this.options.prisma) list.push('@prisma/client', 'prisma')
+    if (this.options.knex) list.push('knex')
 
     if (this.options.express) {
       list.push('express')
@@ -91,7 +92,7 @@ export class DemoGenerator {
   }
 
   get orm() {
-    if (this.options.prisma) {
+    if (this.options.prisma || this.options.knex) {
       return true;
      } else {
       return false;
@@ -112,6 +113,12 @@ export class DemoGenerator {
     if (this.options.prisma) {
       list['{ PrismaClient }'] = '@prisma/client'
       list['{ execSync }'] = 'node:child_process'
+    } else if (this.options.knex) {
+      if (this.options.typescript) {
+        list['{ knex }'] = 'knex'
+      } else {
+        list.knex = 'knex'
+      }
     } else if (this.options.postgres) {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {
@@ -151,6 +158,7 @@ export class DemoGenerator {
     if (options.postgres) options.sqlite = options.sqlite3 = false
 
     if (options.prisma && !options.postgres) options.sqlite = options.sqlite3 = true
+    if (options.knex && !options.postgres) options.sqlite = options.sqlite3 = true
 
     let pj = {}
 
@@ -231,6 +239,7 @@ export class DemoGenerator {
       await this.#outputTemplate('schema.prisma', 'prisma/schema.prisma')
 
       if (!fs.existsSync('prisma/migrations')) {
+        DATABASE_URL="postgresql://janedoe:janedoe@localhost:5432/janedoe?schema=hello-prisma"
         execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
       }
     }

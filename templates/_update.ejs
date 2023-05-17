@@ -10,6 +10,18 @@
     count = 1;
     await prisma.welcome.create({data: { count }});
   }
+<% } else if (options.knex) { -%>
+  // Get current count (may return null)
+  let welcome = await db.table('welcome').first();
+
+  // Increment count, creating table row if necessary
+  if (welcome) {
+    count = welcome.count + 1;
+    await db('welcome').update({ count })
+  } else {
+    count = 1;
+    await db('welcome').insert({ count });
+  }
 <% } else if (options.postgres) { -%>
   if (postgres.client) {
     // increment count, creating table row if necessary    let result = await postgres.client.query('SELECT "count" from "welcome"');

@@ -26,6 +26,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use express web server',
     type: 'boolean'
   })
+  .option('knex', {
+    describe: 'use knex',
+    type: 'boolean'
+  })
   .option('redis', {
     describe: 'use redis pub/sub',
     type: 'boolean'

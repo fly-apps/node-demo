@@ -4,12 +4,12 @@ if (process.env.NODE_ENV === 'production') {
   execSync('npx prisma migrate deploy', { stdio: 'inherit' });
 }
 
-<% } else if (options.sqlite3) { -%>
+<% } else if (options.sqlite3 && !orm) { -%>
 // Ensure welcome table exists
 db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
   
 <% } -%>
-<% if (options.redis || (options.postgres && !orm)) { -%>
+<% if (options.redis || options.knex || (options.postgres && !orm)) { -%>
 (async () => {
 <% if (options.redis) { -%>
   // try to connect to each service
@@ -19,6 +19,14 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
     postgres.tryConnect(true)<% } %>
   ]);
 
+<% } else if (options.knex) { -%>
+  // Ensure welcome table exists
+  if (!(await db.schema.hasTable('welcome'))) {
+    await db.schema.createTable('welcome', table => {
+      table.integer('count')
+    })
+  }
+    
 <% } else if (options.postgres && !orm) { -%>
   // try to connect to postgres
   await postgres.tryConnect(true);

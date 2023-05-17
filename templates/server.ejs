@@ -39,6 +39,21 @@ const wss = new WebSocketServer({ noServer: true });
 // open database
 const prisma = new PrismaClient();
 
+<% } else if (options.knex) { -%>
+// open database
+const db = knex({
+<% if (options.sqlite3) { -%>
+  client: 'sqlite3',
+  connection: {
+    filename: "./counter.sqlite3"
+  },
+  useNullAsDefault: true
+<% } else { -%>
+  client: 'pg',
+  connection: process.env.DATABASE_URL
+<% } -%>
+});
+
 <% } else if (options.sqlite3) { -%>
 // open database
 const db = new sqlite3.Database('counter.sqlite3');
