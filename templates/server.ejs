@@ -31,11 +31,15 @@ const wss = new WebSocketServer({ noServer: true });
 <% } -%>
 <% } -%>
 
-<% if (options.redis || options.postgres) { -%>
-<%- include('_restart.ejs') -%>
+<% if (options.redis || (options.postgres && !orm)) { -%>
+<%- include('_restart.ejs', { options, orm }) -%>
 
 <% } -%>
-<% if (options.sqlite3) { -%>
+<% if (options.prisma) { -%>
+// open database
+const prisma = new PrismaClient();
+
+<% } else if (options.sqlite3) { -%>
 // open database
 const db = new sqlite3.Database('counter.sqlite3');
 
@@ -86,7 +90,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   let oldCount = count;
 
 <% } -%>
-<%- include('_update.ejs') -%>
+<%- include('_update.ejs', { options }) -%>
 
 <% if (options.ws) { -%>
   if (oldCount !== count) {
@@ -163,4 +167,4 @@ wss.on('connection', (ws) => {
 });
 <% } -%>
 
-<%- include('_startup.ejs') -%>
+<%- include('_startup.ejs', { options, orm }) -%>

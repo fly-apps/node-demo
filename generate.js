@@ -30,6 +30,7 @@ export class DemoGenerator {
     if (this.options.postgres) list.push('pg')
     if (this.options.sqlite3) list.push('sqlite3')
     if (this.options.redis) list.push('redis')
+    if (this.options.prisma) list.push('@prisma/client', 'prisma')
 
     if (this.options.express) {
       list.push('express')
@@ -74,6 +75,10 @@ export class DemoGenerator {
       steps.push('tailwindcss -i src/input.css -o public/index.css')
     }
 
+    if (this.options.prisma) {
+      steps.unshift('prisma generate')
+    }
+
     return steps.length ? steps.join(' && ') : undefined
   }
 
@@ -82,6 +87,14 @@ export class DemoGenerator {
       return '<%= count %>'
     } else {
       return '@@COUNT@@'
+    }
+  }
+
+  get orm() {
+    if (this.options.prisma) {
+      return true;
+     } else {
+      return false;
     }
   }
 
@@ -96,7 +109,10 @@ export class DemoGenerator {
   get imports() {
     let list = {}
 
-    if (this.options.postgres) {
+    if (this.options.prisma) {
+      list['{ PrismaClient }'] = '@prisma/client'
+      list['{ execSync }'] = 'node:child_process'
+    } else if (this.options.postgres) {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {
       list.sqlite3 = 'sqlite3'
@@ -132,6 +148,10 @@ export class DemoGenerator {
 
     if (options.redis) options.ws = true
 
+    if (options.postgres) options.sqlite = options.sqlite3 = false
+
+    if (options.prisma && !options.postgres) options.sqlite = options.sqlite3 = true
+
     let pj = {}
 
     try {
@@ -163,6 +183,7 @@ export class DemoGenerator {
     let uninstall = []
     let dependencies = [...this.dependencies, ...this.devDependencies]
     for (const pkg in {...pj.dependencies, ...pj.devDependencies}) {
+      if (pkg === '@flydotio/dockerfile') continue
       if (!dependencies.includes(pkg)) uninstall.push(pkg)
     }
 
@@ -204,6 +225,14 @@ export class DemoGenerator {
       await this.#rmFile('tsconfig.json')
       await this.#outputTemplate('server.ejs', 'server.js')
       await this.#rmFile('src/server.ts')
+    }
+
+    if (options.prisma) {
+      await this.#outputTemplate('schema.prisma', 'prisma/schema.prisma')
+
+      if (!fs.existsSync('prisma/migrations')) {
+        execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
+      }
     }
 
     if (options.ws) {

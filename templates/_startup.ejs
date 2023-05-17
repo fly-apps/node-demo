@@ -1,4 +1,15 @@
-<% if (options.redis || options.postgres) { -%>
+<% if (options.prisma) { -%>
+// run migrations
+if (process.env.NODE_ENV === 'production') {
+  execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+}
+
+<% } else if (options.sqlite3) { -%>
+// Ensure welcome table exists
+db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
+  
+<% } -%>
+<% if (options.redis || (options.postgres && !orm)) { -%>
 (async () => {
 <% if (options.redis) { -%>
   // try to connect to each service
@@ -8,12 +19,12 @@
     postgres.tryConnect(true)<% } %>
   ]);
 
-<% } else if (options.postgres) { -%>
+<% } else if (options.postgres && !orm) { -%>
   // try to connect to postgres
   await postgres.tryConnect(true);
 
 <% } -%>
-<% if (options.postgres) { -%>
+<% if (options.postgres && !orm) { -%>
   // Ensure welcome table exists
   await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
 
@@ -24,11 +35,6 @@
   });
 })();
 <% } else { -%>
-<% if (options.sqlite3) { -%>
-// Ensure welcome table exists
-db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
-
-<% } -%>
 // Start web server on port 3000
 <% if (options.express) { %>app<% } else { %>server<% } %>.listen(3000, () => {
   console.log('Server is listening on port 3000');

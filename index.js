@@ -35,6 +35,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use postgresdb',
     type: 'boolean'
   })
+  .option('prisma', {
+    describe: 'use prisma',
+    type: 'boolean'
+  })
   .option('sqlite', {
     alias: ['sqlite3'],
     describe: 'use sqlite3',

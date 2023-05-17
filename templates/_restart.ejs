@@ -37,9 +37,9 @@ const postgres = {
       throw(error);
     }
   }<% if (!options.redis) { -%>,
+
 <% } else { %>
 }
-
 
 // redis subscriber
 const subscriber = {
