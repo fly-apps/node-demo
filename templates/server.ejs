@@ -144,7 +144,9 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } else { -%>
   try {
     let contents = fs.readFileSync(`views/index.<% if (options.ejs) { %>ejs<% } else { %>tmpl<% } %>`, 'utf-8');
-<% if (options.ejs) { -%>
+<% if (options.mustache) { -%>
+    contents = mustache.render(contents, { count });
+<% } else if (options.ejs) { -%>
     contents = ejs.render(contents, { count });
 <% } else { -%>
     contents = contents.replace('<%= count %>', count.toString());

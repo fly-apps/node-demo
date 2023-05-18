@@ -227,7 +227,7 @@ export class DemoGenerator {
     const uninstall = []
     const dependencies = [...this.dependencies, ...this.devDependencies]
     for (const pkg in { ...pj.dependencies, ...pj.devDependencies }) {
-      if (pkg === '@flydotio/dockerfile') continue
+      if (pkg.includes('@flydotio')) continue
       if (!dependencies.includes(pkg)) uninstall.push(pkg)
     }
 
@@ -259,6 +259,7 @@ export class DemoGenerator {
     try {
       pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
     } catch {
+      pj = {}
     }
     pj.scripts ||= {}
 
