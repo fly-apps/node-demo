@@ -1,5 +1,3 @@
-[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
-
 ## Overview
 
 Provides a Node.js generator to produce Dockerfiles and related files.  It is intended to support any framework that lists its dependencies, includes a `start` script in `package.json`, and optionally includes a `build` script.
@@ -13,47 +11,57 @@ See [blog post](https://fly.io/blog/flydotio-heart-js/) for more information.
 To run once:
 
 ```
-npx --yes @flydotio/dockerfile@latest
+npx --yes @flydotio/node-demo@latest
 ```
 
-Or install it with your favorite package manager:
+### General Option:
 
-```
-npm install @flydotio/dockerfile --save-dev
-pnpm add -D @flydotio/dockerfile
-yarn add @flydotio/dockerfile --dev
-```
-
-Once installed, you can run and re-run using:
-
-```
-npx dockerfile
-```
-
-Options are saved between runs into `package.json`. To invert a boolean options, add or remove a no- prefix from the option name.
-
-### Options:
-
-* `--ignore-scripts` - do not execute any scripts defined in the project `package.json` and its dependencies.
 * `--force` - overwrite existing files
-* `--legacy-peer-deps` - [ignore peer dependencies](https://docs.npmjs.com/cli/v7/using-npm/config#legacy-peer-deps).
-* `--swap=n` - allocate swap space.  See [falloc options](https://man7.org/linux/man-pages/man1/fallocate.1.html#OPTIONS) for suffixes
-* `--windows` - make Dockerfile work for Windows users that may have set `git config --global core.autocrlf true`.
+* `--esm` - use imports (es6) instead of require (cjs)
+
+## Templating Options:
+
+* `--ejs` - use Embedded JavaScript templating (ejs)
+* `--mustache` - use mustache templates
+
+# Alternate Web Server
+
+* `--express` - use express web server
+
+## Database Options:
+
+* `--postgresql` - use postgresdb
+* `--sqlite` - use sqlite3
+
+## ORM Options:
+
+* `--knex` - use knex ORM for databases
+* `--prisma` - use prisma ORM for databases
+
+## WebSocket:
+
+* `--websocket` - use websockets for real-time updates
+* `--htmx` - use htmx for socket updates
+* `--redis` - use redis pub/sub
+
+## Packaging alternatives:
+
+* `--pnpm` - use pnpm as the package manager
+* `--yarn` - use yarn as the package manager
+
+## Popular builders
+
+* `--tailwindcss` - use tailwindcss
+* `--typescript` - generate typescript
 
 ## Testing
 
-A single invocation of `npm test` will run all of the tests defined.  Additionally `npm run eslint` will run eslint.
+A testing strategy has not yet been adopted.  The combinatorics of the above options are mind boggling!
 
-The current integration testing strategy is to run the dockerfile generator against various configurations and compare the generated artifacts with expected results.  `ARG` values in `Dockerfiles` are masked before comparison.
+## Known bugs/limitations:
 
-To assis with this process, outputs of tests can be captured automatically.  This is useful when adding new tests and when making a change that affects many tests.  Be sure to inspect the output (e.g., by using `git diff`) before committing.
+* When rerunning this tool, files that were previously created but no longer needed are removed.  This does not include outputs in the `build` directory for example.
 
-```
-npm run test:capture
-```
+* Switching packaging managers may result in problems.  It generally is best to delete the `node_modules` directory before switching.
 
-Additionally, each the outputs in each test directory can be directly tested to ensure that they can be successfully built by running docker buildx directory passing in the necessary build arguments.  For example:
-
-```
-docker buildx build . --build-arg NODE_VERSION=18
-```
+* This tool won't (yet!) define volumes or set up litefs, so sqlite databases are ephemeral.

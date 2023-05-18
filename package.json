@@ -1,5 +1,5 @@
 {
-  "name": "@flydotio/nodedemo",
+  "name": "@flydotio/node-demo",
   "version": "0.0.1",
   "description": "Fly.io Node.js demo",
   "main": "./index.js",
@@ -38,6 +38,8 @@
     "mocha": "^10.2.0"
   },
   "files": [
+    "README.md",
+    "package.json",
     "index.js",
     "generate.js",
     "templates"
