@@ -49,11 +49,10 @@ export class DemoGenerator {
     const list = []
 
     if (this.options.typescript) {
-      list.push(
-        '@types/node',
-        '@types/pg',
-        'typescript'
-      )
+      list.push('@types/node', 'typescript')
+
+      if (this.options.postgres && !this.orm) list.push('@types/pg')
+      if (this.options.mustache) list.push('@types/mustache')
 
       if (this.options.express) {
         list.push('@types/express')

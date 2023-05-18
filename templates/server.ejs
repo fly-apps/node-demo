@@ -133,7 +133,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   response.render('index', { count });
 <% } else { -%>
   try {
-    let content = fs.readFileSync('views/index.ejs', 'utf-8')
+    let content = fs.readFileSync('views/index.<%= templateExtension %>', 'utf-8')
       .replace('<%= count %>', count.toString());
     response.set('Content-Type', 'text/html');
     response.send(content)
@@ -143,7 +143,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <% } else { -%>
   try {
-    let contents = fs.readFileSync(`views/index.<% if (options.ejs) { %>ejs<% } else { %>tmpl<% } %>`, 'utf-8');
+    let contents = fs.readFileSync(`views/index.<%= templateExtension %>`, 'utf-8');
 <% if (options.mustache) { -%>
     contents = mustache.render(contents, { count });
 <% } else if (options.ejs) { -%>
