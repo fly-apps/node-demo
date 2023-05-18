@@ -359,7 +359,7 @@ export class DemoGenerator {
       fs.unlinkSync(`${tmpdir}/tailwind.config.js`)
 
       if (!fs.existsSync('.git')) {
-        execSync('git init', { stdio: 'inherit' })
+        execSync('git init -b main', { stdio: 'inherit' })
       }
     }
   }
