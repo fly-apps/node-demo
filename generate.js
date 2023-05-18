@@ -256,7 +256,10 @@ export class DemoGenerator {
       }
     }
 
-    pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
+    try {
+      pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
+    } catch {
+    }
     pj.scripts ||= {}
 
     let update = false
