@@ -192,7 +192,7 @@ server.on('upgrade', (request, socket, head) => {
 wss.on('connection', (ws) => {
 <% } -%>
   // update client on a best effort basis
-  try { ws.send(count.toString()) } catch {};
+  if (count) try { ws.send(count.toString()) } catch {};
 
   // We don’t expect any messages on websocket, but log any ones we do get.
   ws.on('message', console.log);
