@@ -1,0 +1,10 @@
+// schema.ts
+<% if (options.postgres) { -%>
+import { pgTable, integer } from "drizzle-orm/pg-core";
+<% } else { -%>
+import { sqliteTable, integer } from "drizzle-orm/sqlite-core";
+<% } -%>
+
+export const welcome = <%= options.postgres ? 'pgTable' : 'sqliteTable' %>("welcome", {
+  count: integer("count").notNull()
+});

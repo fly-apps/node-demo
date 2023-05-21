@@ -5,6 +5,9 @@
 <% if (!options.esm) { -%>
     "module": "commonjs",
 <% } -%>
+<% if (options.drizzle) { -%>
+    "skipLibCheck": true,
+<% } -%>
     "target": "ES2018",
     "noImplicitAny": true,
     "noImplicitThis": true,

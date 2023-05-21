@@ -28,10 +28,18 @@ export class DemoGenerator {
 
     if (this.options.ejs) list.push('ejs')
     if (this.options.postgres) list.push('pg')
-    if (this.options.sqlite3) list.push('sqlite3')
     if (this.options.redis) list.push('redis')
     if (this.options.prisma) list.push('@prisma/client', 'prisma')
+    if (this.options.drizzle) list.push('drizzle-orm', 'drizzle-kit')
     if (this.options.knex) list.push('knex')
+
+    if (this.options.sqlite3) {
+      if (this.options.drizzle) {
+        list.push('better-sqlite3')
+      } else {
+        list.push('sqlite3')
+      }
+    }
 
     if (this.options.express) {
       list.push('express')
@@ -51,8 +59,15 @@ export class DemoGenerator {
     if (this.options.typescript) {
       list.push('@types/node', 'typescript')
 
-      if (this.options.postgres && !this.orm) list.push('@types/pg')
+      if (this.options.postgres && (!this.orm || this.options.drizzle)) {
+        list.push('@types/pg')
+      }
+
       if (this.options.mustache) list.push('@types/mustache')
+
+      if (this.options.sqlite3 && this.options.drizzle) {
+        list.push('@types/better-sqlite3')
+      }
 
       if (this.options.express) {
         list.push('@types/express')
@@ -81,6 +96,10 @@ export class DemoGenerator {
       steps.unshift('prisma generate')
     }
 
+    if (this.options.drizzle) {
+      steps.push(`drizzle-kit generate:${this.options.sqlite3 ? 'sqlite' : 'pg'} --out src/db/migrations --schema src/db/schema.ts`)
+    }
+
     return steps.length ? steps.join(' && ') : undefined
   }
 
@@ -95,7 +114,7 @@ export class DemoGenerator {
   }
 
   get orm() {
-    if (this.options.prisma || this.options.knex) {
+    if (this.options.prisma || this.options.knex || this.options.drizzle) {
       return true
     } else {
       return false
@@ -122,6 +141,18 @@ export class DemoGenerator {
     if (this.options.prisma) {
       list['{ PrismaClient }'] = '@prisma/client'
       list['{ execSync }'] = 'node:child_process'
+    } else if (this.options.drizzle) {
+      list.schema = './db/schema'
+
+      if (this.options.sqlite3) {
+        list['{ drizzle }'] = 'drizzle-orm/sql-js'
+        list.Database = 'better-sqlite3'
+        list['{ migrate }'] = 'drizzle-orm/sql-js/migrator'
+      } else {
+        list['{ drizzle }'] = 'drizzle-orm/node-postgres'
+        list['{ Pool }']= 'pg'
+        list['{ migrate }'] = 'drizzle-orm/node-postgres/migrator'
+      }
     } else if (this.options.knex) {
       if (this.options.typescript) {
         list['{ knex }'] = 'knex'
@@ -165,6 +196,8 @@ export class DemoGenerator {
     if (options.force) this.#answer = 'a'
 
     if (options.redis) options.ws = true
+
+    if (options.drizzle) options.typescript = options.ts = true
 
     if (options.postgres) options.sqlite = options.sqlite3 = false
 
@@ -295,12 +328,20 @@ export class DemoGenerator {
       await this.#rmFile('src/server.ts')
     }
 
+    if (options.drizzle) {
+      await this.#outputTemplate('schema.drizzle', 'src/db/schema.ts')
+    } else {
+      await this.#rmFile('src/db/schema.ts')
+    }
+
     if (options.prisma) {
       await this.#outputTemplate('schema.prisma', 'prisma/schema.prisma')
 
       if (!fs.existsSync('prisma/migrations')) {
         execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
       }
+    } else {
+      await this.#rmFile('prisma/schema.prisma')
     }
 
     if (options.ws && !options.htmx) {

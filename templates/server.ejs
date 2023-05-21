@@ -42,6 +42,15 @@ const wss = new WebSocketServer({ noServer: true });
 // open database
 const prisma = new PrismaClient();
 
+<% } else if (options.drizzle) { -%>
+// open database
+<% if (options.sqlite3) { -%>
+const db = drizzle(new Database('counter.sqlite3'))
+<% } else { -%>
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool)
+<% } -%>
+  
 <% } else if (options.knex) { -%>
 // open database
 const db = knex({

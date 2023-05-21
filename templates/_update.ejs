@@ -17,21 +17,34 @@
   // Increment count, creating table row if necessary
   if (welcome) {
     count = welcome.count + 1;
-    await db('welcome').update({ count })
+    await db('welcome').update({ count });
   } else {
     count = 1;
     await db('welcome').insert({ count });
   }
+<% } else if (options.drizzle) { -%>
+  // Get current count (may return null)
+  let welcome = await db.select().from(schema.welcome);
+
+  // Increment count, creating table row if necessary
+  if (welcome?.length > 0) {
+    count = welcome[0].count + 1;
+    await db.update(schema.welcome).set({ count }).returning();
+  } else {
+    count = 1;
+    await db.insert(schema.welcome).values({ count }).returning();
+  }
 <% } else if (options.postgres) { -%>
   if (postgres.client) {
-    // increment count, creating table row if necessary    let result = await postgres.client.query('SELECT "count" from "welcome"');
+    // increment count, creating table row if necessary
+    let welcome = await postgres.client.query('SELECT "count" from "welcome"');
 
     // increment count, creating table row if necessary
-    if (!result.rows.length) {
+    if (!welcome.rows.length) {
       count = 1;
       await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count]);
     } else {
-      count = result.rows[0].count + 1;
+      count = welcome.rows[0].count + 1;
       await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count]);
     }
   }
