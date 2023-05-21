@@ -145,9 +145,9 @@ export class DemoGenerator {
       list.schema = './db/schema'
 
       if (this.options.sqlite3) {
-        list['{ drizzle }'] = 'drizzle-orm/sql-js'
+        list['{ drizzle }'] = 'drizzle-orm/better-sqlite3'
         list.Database = 'better-sqlite3'
-        list['{ migrate }'] = 'drizzle-orm/sql-js/migrator'
+        list['{ migrate }'] = 'drizzle-orm/better-sqlite3/migrator'
       } else {
         list['{ drizzle }'] = 'drizzle-orm/node-postgres'
         list['{ Pool }']= 'pg'

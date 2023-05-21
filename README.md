@@ -35,6 +35,7 @@ npx --yes @flydotio/node-demo@latest
 
 ## ORM Options:
 
+* `--drizzle` - use drizzle ORM for databases.  Implies typescript.
 * `--knex` - use knex ORM for databases
 * `--prisma` - use prisma ORM for databases
 
