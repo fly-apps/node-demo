@@ -4,14 +4,26 @@ Provides a Node.js generator to produce Dockerfiles and related files.  It is in
 
 See [test](./test) for a list of frameworks and examples of Dockerfiles produced based on the associated `package.json` and lock files.
 
-See [blog post](https://fly.io/blog/flydotio-heart-js/) for more information.
+See [blog post](https://fly.io/blog/vanilla-candy-sprinkles/) for more information.
 
 ## Usage
 
-To run once:
+To run once, in an empty directory:
 
 ```
 npx --yes @flydotio/node-demo@latest
+```
+
+To enable rerunning with different options, install via:
+
+```
+npm install @flydotio/node-demo --save-dev
+```
+
+Then you can rerun as many times as desired using:
+
+```
+npx node-demo
 ```
 
 ### General Option:
