@@ -40,12 +40,16 @@ const wss = new WebSocketServer({ noServer: true });
 <% } -%>
 <% if (options.prisma) { -%>
 // open database
+<% if (options.sqlite3) { -%>
+process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString();
+<% } -%>
 const prisma = new PrismaClient();
 
 <% } else if (options.drizzle) { -%>
 // open database
 <% if (options.sqlite3) { -%>
-const db = drizzle(new Database('counter.sqlite3'))
+process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString();
+const db = drizzle(new Database(new URL(process.env.DATABASE_URL).pathname));
 <% } else { -%>
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool)
@@ -53,12 +57,13 @@ const db = drizzle(pool)
   
 <% } else if (options.knex) { -%>
 // open database
+<% if (options.sqlite3) { -%>
+process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString();
+<% } -%>
 const db = knex({
 <% if (options.sqlite3) { -%>
   client: 'sqlite3',
-  connection: {
-    filename: "./counter.sqlite3"
-  },
+  connection: { filename: new URL(process.env.DATABASE_URL).pathname },
   useNullAsDefault: true
 <% } else { -%>
   client: 'pg',
@@ -68,7 +73,8 @@ const db = knex({
 
 <% } else if (options.sqlite3) { -%>
 // open database
-const db = new sqlite3.Database('counter.sqlite3');
+process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString();
+const db = new sqlite3.Database(new URL(process.env.DATABASE_URL).pathname);
 
 <% } -%>
 // last known count

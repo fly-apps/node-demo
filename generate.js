@@ -169,6 +169,8 @@ export class DemoGenerator {
 
     if (this.options.redis) list.redis = 'redis'
 
+    if (this.options.sqlite3) list.url = 'node:url'
+
     if (this.options.express) {
       list.express = 'express'
       if (this.options.ws) list.expressWs = 'express-ws'
@@ -338,6 +340,10 @@ export class DemoGenerator {
       await this.#outputTemplate('schema.prisma', 'prisma/schema.prisma')
 
       if (!fs.existsSync('prisma/migrations')) {
+        if (this.options.sqlite3) {
+          process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString()
+        }
+
         execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
       }
     } else {
