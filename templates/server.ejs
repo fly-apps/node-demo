@@ -139,7 +139,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <%- include('_update.ejs', { options }) -%>
 
-<% if (options.ws) { -%>
+<% if (options.ws && !options.mongodb) { -%>
   if (oldCount !== count) {
 <% if (options.redis) { -%>
     // publish new count on redis
