@@ -54,7 +54,9 @@ const subscriber = {
 
     // Forward messages from redis to all websocket clients
     this.client.subscribe('welcome:counter', (message<% if (options.typescript) { %> : string<% } %>) => {
-      count = parseInt(message);
+<% if (options.htmx) { -%>
+      message = `<div id="counter" hx-swap-oob="innerHTML">${message}</div>`
+<% } -%>
 
       wss.clients.forEach(client => {
         try { client.send(message) } catch {};
@@ -117,13 +119,45 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
 <% if (options.mongodb) { -%>
 
     this.db = this.client.db(dbName);
+
+<% if (options.ws) { -%>
+    // Forward changes to all websocket clients
+    changestream = this.db.watch();
+    changestream.on('change', change => {
+      let update = {};
+
+      if (change.operationType === 'insert') {
+        update = change.fullDocument;
+      } else if (change.operationType === 'update') {
+        update = change.updateDescription.updatedFields;
+      }
+
+      if (!update.count) return;
+<% if (options.htmx) { -%>
+
+      const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`;
+
 <% } -%>
+      wss.clients.forEach(client => {
+        try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {};
+      });
+    });
+<% } -%>
+<% } -%>
+
+    this.client.on('<%= options.mongodb ? 'topologyClosed' : 'end' %>', event => {
+      this.disconnect();
+      this.reconnect();
+    });
   },
 
   disconnect() {
     if (this.client) {
-      this.client.end();
+      this.client.<%= options.mongodb ? 'close' : 'end' %>();
       this.client = null;
+<% if (options.mongodb) { -%>
+      this.db = null;
+<% } -%>
     }
   }
 }
