@@ -34,9 +34,24 @@
     count = 1;
     await db.insert(schema.welcome).values({ count })<% if (options.sqlite3) { %>.run()<% } else { %>.returning()<% } %>;
   }
+<% } else if (options.mongodb) { -%>
+  if (mongo.db) {
+    // fetch current count
+    let collection = mongo.db.collection("welcome");
+    let document = await collection.findOne({_id: 1});
+
+    // increment count, creating document if necessary
+    if (!document) {
+      count = 1;
+      await collection.insertOne( {_id: 1, count} );
+    } else {
+      count = document.count + 1;
+      await collection.updateOne( {_id: 1}, {$set: { count }});
+    }
+  }
 <% } else if (options.postgres) { -%>
   if (postgres.client) {
-    // increment count, creating table row if necessary
+    // fetch current count
     let welcome = await postgres.client.query('SELECT "count" from "welcome"');
 
     // increment count, creating table row if necessary

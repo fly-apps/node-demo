@@ -1,10 +1,10 @@
 <% if (options.redis) { -%>
-// common reconnect logic for postgres, redis clients
+// common reconnect logic for <%= options.mongodb ? 'mongodb' : 'postgres' %>, redis clients
 const reconnect = {
   client: null<% if (options.typescript) { %> as any<% } %>,
 <% } else { -%>
-// postgres client
-const postgres = {
+// <%= options.mongodb ? 'mongodb' : 'postgres' %> client
+const <%= options.mongodb ? 'mongo' : 'postgres' %> = {
 <% } -%>
   interval: null<% if (options.typescript) { %> as NodeJS.Timer | null<% } %>,
 <% if (options.typescript && options.redis) { -%>
@@ -37,7 +37,6 @@ const postgres = {
       throw(error);
     }
   }<% if (!options.redis) { -%>,
-
 <% } else { %>
 }
 
@@ -46,8 +45,8 @@ const subscriber = {
   ...reconnect,
 <% if (options.typescript) { -%>
   client: null as redis.RedisClientType | null,
-<% } -%>
 
+<% } -%>
   async connect() {
     this.client = redis.createClient({url: process.env.REDIS_URL});
 
@@ -98,8 +97,8 @@ const publisher = {
   }
 }
 
-// postgres client
-const postgres = {
+// <%= options.mongodb ? 'mongodb' : 'postgresdb' %> client
+const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
   ...reconnect,
 <% } -%>
 <% if (options.typescript) { -%>
@@ -107,9 +106,18 @@ const postgres = {
 <% } -%>
 
   async connect() {
-    this.client = new pg.Client({connectionString: process.env.DATABASE_URL})
+<% if (options.mongodb) { -%>
+    this.client = new mongodb.MongoClient(dbURL.toString(),
+      { useNewUrlParser: true, useUnifiedTopology: true });
+<% } else { -%>
+    this.client = new pg.Client({connectionString: process.env.DATABASE_URL});
+<% } -%>
 
     await this.client.connect();
+<% if (options.mongodb) { -%>
+
+    this.db = this.client.db(dbName);
+<% } -%>
   },
 
   disconnect() {

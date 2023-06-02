@@ -9,7 +9,7 @@ if (process.env.NODE_ENV === 'production') {
 db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
   
 <% } -%>
-<% if (options.redis || options.knex || (options.postgres && !orm) || options.drizzle) { -%>
+<% if (options.redis || options.knex || ((options.mongodb || options.postgres) && !orm) || options.drizzle) { -%>
 (async () => {
 <% if (options.redis) { -%>
   // try to connect to each service
@@ -30,7 +30,11 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
 <% } else if (options.drizzle) { -%>
   // Run migrations
   await migrate(db, { migrationsFolder: "./src/db/migrations" })
-      
+   
+<% } else if (options.mongodb && !orm) { -%>
+  // try to connect to mongodb
+  await mongo.tryConnect(true);
+
 <% } else if (options.postgres && !orm) { -%>
   // try to connect to postgres
   await postgres.tryConnect(true);

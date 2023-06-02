@@ -28,6 +28,7 @@ export class DemoGenerator {
 
     if (this.options.ejs) list.push('ejs')
     if (this.options.postgres) list.push('pg')
+    if (this.options.mongodb) list.push('mongodb')
     if (this.options.redis) list.push('redis')
     if (this.options.prisma) list.push('@prisma/client', 'prisma')
     if (this.options.drizzle) list.push('drizzle-orm', 'drizzle-kit')
@@ -150,7 +151,7 @@ export class DemoGenerator {
         list['{ migrate }'] = 'drizzle-orm/better-sqlite3/migrator'
       } else {
         list['{ drizzle }'] = 'drizzle-orm/node-postgres'
-        list['{ Pool }']= 'pg'
+        list['{ Pool }'] = 'pg'
         list['{ migrate }'] = 'drizzle-orm/node-postgres/migrator'
       }
     } else if (this.options.knex) {
@@ -159,6 +160,8 @@ export class DemoGenerator {
       } else {
         list.knex = 'knex'
       }
+    } else if (this.options.mongodb) {
+      list.mongodb = 'mongodb'
     } else if (this.options.postgres) {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {

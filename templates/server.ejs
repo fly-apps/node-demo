@@ -8,6 +8,13 @@ const <%= name %> = require('<%= pkg %>');
 <% } -%>
 <% } -%>
 
+<% if (options.mongodb) { -%>
+// determine mongodb name
+const dbURL = new URL(process.env.DATABASE_URL || 'mongodb://localhost:27017/demo')
+const dbName = dbURL.pathname.replace(/^\/*/, '');
+dbURL.pathname = '/';
+
+<% } -%>
 <% if (options.express) { -%>
 <% if (options.ws) { -%>
 // set up express and web socket
@@ -34,7 +41,7 @@ const wss = new WebSocketServer({ noServer: true });
 <% } -%>
 <% } -%>
 
-<% if (options.redis || (options.postgres && !orm)) { -%>
+<% if (options.redis || ((options.postgres || options.mongodb) && !orm)) { -%>
 <%- include('_restart.ejs', { options, orm }) -%>
 
 <% } -%>

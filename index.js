@@ -38,6 +38,11 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use htmx for socket updates',
     type: 'boolean'
   })
+  .option('mongodb', {
+    alias: ['mongo'],
+    describe: 'use mongodb',
+    type: 'boolean'
+  })
   .option('mustache', {
     describe: 'use mustache templates',
     type: 'boolean'
