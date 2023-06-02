@@ -136,6 +136,8 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
 
       if (!update.count) return;
 
+      count = update.count;
+
 <% if (options.htmx) { -%>
       const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`;
 
