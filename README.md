@@ -78,8 +78,6 @@ A testing strategy has not yet been adopted.  The combinatorics of the above opt
 
 * Switching packaging managers may result in problems.  It generally is best to delete the `node_modules` directory before switching.
 
-* This tool won't (yet!) define volumes or set up litefs, so sqlite databases are ephemeral.
-
-* Nor does this tool set up Postgres databases for you locally.  If you wish to try this out, you will need to install postgres, and create a database.
+* This tool does not install or set up Postgres or Mongodb databases for you locally.
 
 * This tool does not set environment variables or update your `.env` file.
