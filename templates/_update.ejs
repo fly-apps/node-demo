@@ -38,15 +38,15 @@
   if (mongo.db) {
     // fetch current count
     let collection = mongo.db.collection("welcome");
-    let document = await collection.findOne({_id: 1});
+    let document = await collection.findOne( {} );
 
     // increment count, creating document if necessary
     if (!document) {
       count = 1;
-      await collection.insertOne( {_id: 1, count} );
+      await collection.insertOne( { count } );
     } else {
       count = document.count + 1;
-      await collection.updateOne( {_id: 1}, {$set: { count }});
+      await collection.updateOne( {_id: document._id}, {$set: { count }});
     }
   }
 <% } else if (options.postgres) { -%>

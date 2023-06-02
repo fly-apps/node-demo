@@ -14,6 +14,13 @@ const dbURL = new URL(process.env.DATABASE_URL || 'mongodb://localhost:27017/dem
 const dbName = dbURL.pathname.replace(/^\/*/, '');
 dbURL.pathname = '/';
 
+<% if (options.typescript && options.ws) { -%>
+// define document data type
+class Welcome {
+  constructor(public count: number, public _id?: mongodb.ObjectId) {}
+}
+
+<% } -%>
 <% } -%>
 <% if (options.express) { -%>
 <% if (options.ws) { -%>

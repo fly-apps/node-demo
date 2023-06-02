@@ -104,13 +104,15 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
   ...reconnect,
 <% } -%>
 <% if (options.typescript) { -%>
-  client: null as pg.Client | null,
+  client: null as <%= options.mongodb ? 'mongodb.MongoClient' : 'pg.Client' %> | null,
+<% if (options.mongodb) { -%>
+  db: null as mongodb.Db | null,
+<% } -%>
 <% } -%>
 
   async connect() {
 <% if (options.mongodb) { -%>
-    this.client = new mongodb.MongoClient(dbURL.toString(),
-      { useNewUrlParser: true, useUnifiedTopology: true });
+    this.client = new mongodb.MongoClient(dbURL.toString());
 <% } else { -%>
     this.client = new pg.Client({connectionString: process.env.DATABASE_URL});
 <% } -%>
@@ -122,14 +124,14 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
 
 <% if (options.ws) { -%>
     // Forward changes to all websocket clients
-    changestream = this.db.watch();
+    const changestream = this.db.watch();
     changestream.on('change', change => {
-      let update = {};
+      let update = { count: 0 }<% if (options.typescript) {%> as Welcome<% } %>;
 
       if (change.operationType === 'insert') {
-        update = change.fullDocument;
+        update = change.fullDocument<% if (options.typescript) {%> as Welcome<% } %>;
       } else if (change.operationType === 'update') {
-        update = change.updateDescription.updatedFields;
+        update = change.updateDescription.updatedFields<% if (options.typescript) {%> as Welcome<% } %>;
       }
 
       if (!update.count) return;
