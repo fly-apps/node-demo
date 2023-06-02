@@ -42,6 +42,7 @@ npx node-demo
 
 ## Database Options:
 
+* `--monbodb` - use mongodb
 * `--postgresql` - use postgresdb
 * `--sqlite` - use sqlite3
 
