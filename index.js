@@ -14,6 +14,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'force overwrite of existing files',
     type: 'boolean'
   })
+  .option('bun', {
+    describe: 'use bun as the package installer',
+    type: 'boolean'
+  })
   .option('drizzle', {
     describe: 'use drizzle ORM for databases',
     type: 'boolean'

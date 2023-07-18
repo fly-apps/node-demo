@@ -209,6 +209,8 @@ export class DemoGenerator {
     if (options.prisma && !options.postgres) options.sqlite = options.sqlite3 = true
     if (options.knex && !options.postgres) options.sqlite = options.sqlite3 = true
 
+    if (global.Bun) options.bun = true
+
     let pj = {}
 
     try {
@@ -220,13 +222,20 @@ export class DemoGenerator {
     pj.devDependencies ||= {}
 
     // remove lock files from other package managers
-    if (options.pnpm) {
+    if (options.bun) {
+      this.#rmFile('pnpm-lock.yaml')
+      this.#rmFile('package-lock.json')
+      this.#rmFile('yarn.lock')
+    } if (options.pnpm) {
+      this.#rmFile('bun.lockb')
       this.#rmFile('package-lock.json')
       this.#rmFile('yarn.lock')
     } else if (options.yarn) {
+      this.#rmFile('bun.lockb')
       this.#rmFile('package-lock.json')
       this.#rmFile('pnpm-lock.yaml')
     } else {
+      this.#rmFile('bun.lockb')
       this.#rmFile('pnpm-lock.yaml')
       this.#rmFile('yarn.lock')
     }
@@ -237,7 +246,9 @@ export class DemoGenerator {
     }
 
     if (install.length !== 0) {
-      if (options.pnpm) {
+      if (options.bun) {
+        execSync(`bun add ${install.join(' ')}`, { stdio: 'inherit' })
+      } else if (options.pnpm) {
         execSync(`pnpm add ${install.join(' ')}`, { stdio: 'inherit' })
       } else if (options.yarn) {
         execSync(`yarn add ${install.join(' ')}`, { stdio: 'inherit' })
@@ -252,7 +263,9 @@ export class DemoGenerator {
     }
 
     if (install.length !== 0) {
-      if (options.pnpm) {
+      if (options.bun) {
+        execSync(`bun add -d ${install.join(' ')}`, { stdio: 'inherit' })
+      } if (options.pnpm) {
         execSync(`pnpm add -D ${install.join(' ')}`, { stdio: 'inherit' })
       } else if (options.yarn) {
         execSync(`yarn add ${install.join(' ')} --dev`, { stdio: 'inherit' })
@@ -269,7 +282,9 @@ export class DemoGenerator {
     }
 
     if (uninstall.length !== 0) {
-      if (options.pnpm) {
+      if (options.bun) {
+        execSync(`bun remove ${install.join(' ')}`, { stdio: 'inherit' })
+      } if (options.pnpm) {
         execSync(`pnpm remove ${install.join(' ')}`, { stdio: 'inherit' })
       } else if (options.yarn) {
         execSync(`yarn remove ${install.join(' ')}`, { stdio: 'inherit' })
@@ -278,8 +293,12 @@ export class DemoGenerator {
       }
     }
 
-    // remove lock files from other package managers
-    if (options.pnpm) {
+    // install packages
+    if (options.bun) {
+      if (!fs.existsSync('bun.lockb')) {
+        execSync('bun install', { stdio: 'inherit' })
+      }
+    } else if (options.pnpm) {
       if (!fs.existsSync('pnpm-lock.yaml')) {
         execSync('pnpm install', { stdio: 'inherit' })
       }
@@ -520,59 +539,64 @@ export class DemoGenerator {
   async #rmFile(name) {
     const dest = path.join(this.#appdir, name)
 
-    if (fs.statSync(dest, { throwIfNoEntry: false })) {
-      let prompt
-      let question
+    try {
+      if (fs.statSync(dest, { throwIfNoEntry: false })) {
+        let prompt
+        let question
 
-      try {
-        if (this.#answer !== 'a') {
-          console.log(`${chalk.bold.red('exist'.padStart(11))}  ${name}`)
+        try {
+          if (this.#answer !== 'a') {
+            console.log(`${chalk.bold.red('exist'.padStart(11))}  ${name}`)
 
-          prompt = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-          })
-
-          // support node 16 which doesn't have a promisfied readline interface
-          question = query => {
-            return new Promise(resolve => {
-              prompt.question(query, resolve)
+            prompt = readline.createInterface({
+              input: process.stdin,
+              output: process.stdout
             })
+
+            // support node 16 which doesn't have a promisfied readline interface
+            question = query => {
+              return new Promise(resolve => {
+                prompt.question(query, resolve)
+              })
+            }
           }
+
+          while (true) {
+            if (question) {
+              this.#answer = await question(`Remove ${dest}? (enter "h" for help) [Ynaqh] `)
+            }
+
+            switch (this.#answer.toLocaleLowerCase()) {
+              case '':
+              case 'y':
+              case 'a':
+                console.log(`${chalk.bold.yellow('remove'.padStart(11, ' '))}  ${name}`)
+                fs.unlinkSync(dest)
+                return dest
+
+              case 'n':
+                console.log(`${chalk.bold.yellow('skip'.padStart(11, ' '))}  ${name}`)
+                return dest
+
+              case 'q':
+                process.exit(0)
+                break
+
+              default:
+                console.log('        Y - yes, remove')
+                console.log('        n - no, do not remove')
+                console.log('        a - all, remove this and all others')
+                console.log('        q - quit, abort')
+                console.log('        h - help, show this help')
+            }
+          }
+        } finally {
+          if (prompt) prompt.close()
         }
-
-        while (true) {
-          if (question) {
-            this.#answer = await question(`Remove ${dest}? (enter "h" for help) [Ynaqh] `)
-          }
-
-          switch (this.#answer.toLocaleLowerCase()) {
-            case '':
-            case 'y':
-            case 'a':
-              console.log(`${chalk.bold.yellow('remove'.padStart(11, ' '))}  ${name}`)
-              fs.unlinkSync(dest)
-              return dest
-
-            case 'n':
-              console.log(`${chalk.bold.yellow('skip'.padStart(11, ' '))}  ${name}`)
-              return dest
-
-            case 'q':
-              process.exit(0)
-              break
-
-            default:
-              console.log('        Y - yes, remove')
-              console.log('        n - no, do not remove')
-              console.log('        a - all, remove this and all others')
-              console.log('        q - quit, abort')
-              console.log('        h - help, show this help')
-          }
-        }
-      } finally {
-        if (prompt) prompt.close()
       }
+    } catch (error) {
+      console.log('caught')
+      if (error.code !== 'ENOENT') throw err;
     }
 
     return dest
