@@ -293,6 +293,18 @@ export class DemoGenerator {
       }
     }
 
+    // read package.json (creating if necessary)
+    try {
+      pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        fs.writeFileSync('package.json', '{}');
+      }
+
+      pj = {}
+    }
+    pj.scripts ||= {}
+
     // install packages
     if (options.bun) {
       if (!fs.existsSync('bun.lockb')) {
@@ -311,13 +323,6 @@ export class DemoGenerator {
         execSync('npm install', { stdio: 'inherit' })
       }
     }
-
-    try {
-      pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
-    } catch {
-      pj = {}
-    }
-    pj.scripts ||= {}
 
     let update = false
     if (pj.scripts.build !== this.build) update = true
