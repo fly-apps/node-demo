@@ -1,6 +1,6 @@
 {
   "name": "@flydotio/node-demo",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Fly.io Node.js demo",
   "main": "./index.js",
   "bin": {

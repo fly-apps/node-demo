@@ -420,19 +420,10 @@ export class DemoGenerator {
       const tmpdir = os.tmpdir()
       fs.writeFileSync(`${tmpdir}/input.css`, input + '}')
 
-      if (this.options.tailwindcss) {
-        const config = await ejs.renderFile(path.join(DemoGenerator.templates, 'tailwind.config.js'), this)
-        fs.writeFileSync(`${tmpdir}/tailwind.config.js`, config)
-        execSync(`npx tailwindcss -c ${tmpdir}/tailwind.config.js -i ${tmpdir}/input.css -o ${tmpdir}/index.css`, { stdio: 'pipe' })
-        proposed = fs.readFileSync(path.join(tmpdir, 'index.css'), 'utf-8')
+      proposed = fs.readFileSync(path.join(DemoGenerator.templates, 'index.css'), 'utf-8')
 
-        await this.#rmFile('tailwind.config.js')
-        await this.#rmFile('src/input.css')
-
-        fs.unlinkSync(`${tmpdir}/input.css`)
-        fs.unlinkSync(`${tmpdir}/index.css`)
-        fs.unlinkSync(`${tmpdir}/tailwind.config.js`)
-      }
+      await this.#rmFile('tailwind.config.js')
+      await this.#rmFile('src/input.css')
 
       await this.#writeFile('public/index.css', proposed)
 
