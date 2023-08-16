@@ -209,7 +209,7 @@ export class DemoGenerator {
     if (options.prisma && !options.postgres) options.sqlite = options.sqlite3 = true
     if (options.knex && !options.postgres) options.sqlite = options.sqlite3 = true
 
-    if (global.Bun) options.bun = true
+    if (typeof Bun !== 'undefined') options.bun = true
 
     let pj = {}
 
