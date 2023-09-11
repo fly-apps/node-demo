@@ -9,7 +9,8 @@
   "type": "module",
   "scripts": {
     "eslint": "eslint .",
-    "eslint:fix": "eslint --fix ."
+    "eslint:fix": "eslint --fix .",
+    "release": "./scripts/release.js"
   },
   "author": "Sam Ruby",
   "license": "MIT",

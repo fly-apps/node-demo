@@ -1,8 +1,6 @@
 ## Overview
 
-Provides a Node.js generator to produce Dockerfiles and related files.  It is intended to support any framework that lists its dependencies, includes a `start` script in `package.json`, and optionally includes a `build` script.
-
-See [test](./test) for a list of frameworks and examples of Dockerfiles produced based on the associated `package.json` and lock files.
+Provides a Node.js demo with minimal (and selectable) set of dependencies.
 
 See [blog post](https://fly.io/blog/vanilla-candy-sprinkles/) for more information.
 
