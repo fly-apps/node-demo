@@ -129,7 +129,7 @@ export class DemoGenerator {
   }
 
   get start() {
-    let rt = this.options.bun ? 'bun' : 'node'
+    const rt = this.options.bun ? 'bun' : 'node'
 
     if (this.options.typescript) {
       return `${rt} build/server.js`
@@ -301,7 +301,7 @@ export class DemoGenerator {
       pj = JSON.parse(fs.readFileSync(path.join(appdir, 'package.json'), 'utf-8'))
     } catch (error) {
       if (error.code === 'ENOENT') {
-        fs.writeFileSync('package.json', '{}');
+        fs.writeFileSync('package.json', '{}')
       }
 
       pj = {}
@@ -599,7 +599,7 @@ export class DemoGenerator {
       }
     } catch (error) {
       console.log('caught')
-      if (error.code !== 'ENOENT') throw err;
+      if (error.code !== 'ENOENT') throw error
     }
 
     return dest

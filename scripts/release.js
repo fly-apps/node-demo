@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import fs from "node:fs"
+import fs from 'node:fs'
 
-fs.mkdirSync("pkg", { recursive: true })
+fs.mkdirSync('pkg', { recursive: true })
 
 const packageInfo = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
 
@@ -13,8 +13,7 @@ for (const runtime of ['bun', 'node']) {
   fs.mkdirSync(demo, { recursive: true })
 
   for (const file of packageInfo.files) {
-
-    if (runtime == 'bun' && file === 'README.md') {
+    if (runtime === 'bun' && file === 'README.md') {
       const contents = fs.readFileSync(file, 'utf-8')
         .replace(/node-demo/g, 'bun-demo')
         .replace(/Node(\.js)?/g, 'Bun')
@@ -25,16 +24,16 @@ for (const runtime of ['bun', 'node']) {
         .replace(/^## Packaging alternatives:\s+.*?\n\s*\n/ms, '')
         .replace(/^\* Switching packaging managers.*?\n\s*\n/ms, '')
       fs.writeFileSync(`${demo}/${file}`, contents)
-    } else if (runtime == 'bun' && file === 'package.json') {
+    } else if (runtime === 'bun' && file === 'package.json') {
       const contents = fs.readFileSync(file, 'utf-8')
         .replace(/"node": ">=[\d.]+"/, '"bun": ">=1.0.0"')
         .replace(/node/g, 'bun')
         .replace(/Node(\.js)?/g, 'Bun')
         .replace('/fly-apps/bun-demo', '/fly-apps/node-demo')
       fs.writeFileSync(`${demo}/${file}`, contents)
-    } else if (runtime == 'bun' && file === 'index.js') {
+    } else if (runtime === 'bun' && file === 'index.js') {
       const contents = fs.readFileSync(file, 'utf-8')
-        .replace("node", 'bun')
+        .replace('node', 'bun')
       fs.writeFileSync(`${demo}/${file}`, contents)
     } else {
       fs.cpSync(file, `${demo}/${file}`, { recursive: true })
