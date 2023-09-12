@@ -112,9 +112,9 @@ async function listener(request<% if (options.typescript) { %> : http.IncomingMe
   
   if (pathname === '/') {
     await main(request, response)
-  } else if (<% if (options.typescript) { %>pathname && <% } %>fs.existsSync(`public${pathname}`)) {
+  } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
     try {
-      let contents = fs.readFileSync(`public${pathname}`)
+      let contents = <%= fileRead('`public${pathname}`') %>;
       let mimeType = mimeTypes[pathname.split('.').pop()<% if (options.typescript) { %> as string<% } %>] || 'application/octet-stream'
       
       response.writeHead(200, { "Content-Type": mimeType });
@@ -137,7 +137,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   let oldCount = count;
 
 <% } -%>
-<%- include('_update.ejs', { options }) -%>
+<%- include('_update.ejs', { options, fileRead, fileWrite }) -%>
 
 <% if (options.ws && !options.mongodb) { -%>
   if (oldCount !== count) {
@@ -172,7 +172,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <% } else { -%>
   try {
-    let contents = fs.readFileSync(`views/index.<%= templateExtension %>`, 'utf-8');
+    let contents = <%- fileRead(`'views/index.${templateExtension}'`) %>;
 <% if (options.mustache) { -%>
     contents = mustache.render(contents, { count });
 <% } else if (options.ejs) { -%>

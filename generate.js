@@ -196,6 +196,33 @@ export class DemoGenerator {
     }))
   }
 
+  // emit code for file existence checks
+  fileExists(name) {
+    if (this.options.bun) {
+      return `await Bun.file(${name}).exists()`
+    } else {
+      return `fs.fileExistSync(${name})`
+    }
+  }
+
+  // emit code for file read
+  fileRead(name) {
+    if (this.options.bun) {
+      return `await Bun.file(${name}).text()`
+    } else {
+      return `fs.readFileSync(${name}, 'utf-8')`
+    }
+  }
+
+  // emit code for file write
+  fileWrite(name, content) {
+    if (this.options.bun) {
+      return `await Bun.write(${name}, ${content})`
+    } else {
+      return `fs.writeFileSync(${name}, ${content})`
+    }
+  }
+
   // render each template and write to the destination dir
   async run(appdir, options = {}) {
     this.options = options

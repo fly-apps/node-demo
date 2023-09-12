@@ -93,10 +93,10 @@
 <% } else { -%>
   // increment counter in counter.txt file
   try {
-    count = parseInt(fs.readFileSync('counter.txt', 'utf-8')) + 1;
+    count = parseInt(<%- fileRead("'counter.txt'") %>) + 1;
   } catch {
     count = 1;
   }
 
-  fs.writeFileSync('counter.txt', count.toString());
+  <%- fileWrite("'counter.txt'", 'count.toString()') %>;
 <% } -%>
