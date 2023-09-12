@@ -129,10 +129,13 @@ export class DemoGenerator {
   }
 
   get start() {
+    let rt = this.options.bun ? 'bun' : 'node'
+
     if (this.options.typescript) {
-      return 'node build/server.js'
+      return `${rt} build/server.js`
     } else {
-      return 'node server.js'
+      console.log(`${rt} server.js`)
+      return `${rt} server.js`
     }
   }
 
