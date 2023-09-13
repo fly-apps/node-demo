@@ -1,6 +1,6 @@
 <% if (Object.keys(imports).length > 0) { -%>
 <% for (const [name, pkg] of Object.entries(imports)) { -%>
-<% if (options.typescript && !options.esm && !name.includes('{')) { -%>
+<% if (options.typescript && !options.esm && !options.bun && !name.includes('{')) { -%>
 import * as <%= name %> from '<%= pkg %>';
 <% } else if (options.typescript || options.esm) { -%>
 import <%= name %> from '<%= pkg %>';
