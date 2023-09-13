@@ -102,7 +102,7 @@ app.get('/', async (_request, response) => {
 <% } else { -%>
 <% if (options.bun) { -%>
 // Process requests based on pathname
-async function fetch(request<% if (options.typescript) { %> : http.IncomingMessage<% } %>) {
+async function fetch(request<% if (options.typescript) { %> : Request) : Promise<Response><% }else { %>)<% } %> {
   const { pathname } = new URL(request.url);
 
   if (pathname === '/') {
@@ -148,7 +148,11 @@ async function listener(request<% if (options.typescript) { %> : http.IncomingMe
 <% } -%>
 
 // Main page
+<% if (options.bun) { -%>
+async function main(_request<% if (options.typescript) { %> : Request<% } %>)<% if (options.typescript) { %> : Promise<Response><% } %> {
+<% } else { -%>
 async function main(_request<% if (options.typescript) { %> : http.IncomingMessage<% } %>, response<% if (options.typescript) { %> : http.ServerResponse<% } %>) {
+<% } -%>
 <% } -%>
 <% if (options.ws) { -%>
   let oldCount = count;

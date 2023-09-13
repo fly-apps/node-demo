@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
+<% if (options.bun) { -%>
+    "types": ["bun-types"],
+<% } else { -%>
     "outDir": "./build",
+<% } -%>
     "allowJs": true,
 <% if (!options.esm) { -%>
     "module": "commonjs",

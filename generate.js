@@ -77,6 +77,10 @@ export class DemoGenerator {
         if (this.options.ejs) list.push('@types/ejs')
         if (this.options.ws) list.push('@types/ws')
       }
+
+      if (this.options.bun) {
+        list.push('bun-types')
+      }
     }
 
     if (this.options.tailwindcss) list.push('tailwindcss')
@@ -87,7 +91,7 @@ export class DemoGenerator {
   get build() {
     const steps = []
 
-    if (this.options.typescript) steps.push('tsc')
+    if (this.options.typescript && !this.options.bun) steps.push('tsc')
 
     if (this.options.tailwindcss) {
       steps.push('tailwindcss -i src/input.css -o public/index.css')
@@ -132,9 +136,12 @@ export class DemoGenerator {
     const rt = this.options.bun ? 'bun' : 'node'
 
     if (this.options.typescript) {
-      return `${rt} build/server.js`
+      if (this.options.bun) {
+        return `${rt} server.ts`
+      } else {
+        return `${rt} build/server.js`
+      }
     } else {
-      console.log(`${rt} server.js`)
       return `${rt} server.js`
     }
   }
@@ -316,11 +323,11 @@ export class DemoGenerator {
 
     if (uninstall.length !== 0) {
       if (options.bun) {
-        execSync(`bun remove ${install.join(' ')}`, { stdio: 'inherit' })
+        execSync(`bun remove ${uninstall.join(' ')}`, { stdio: 'inherit' })
       } if (options.pnpm) {
-        execSync(`pnpm remove ${install.join(' ')}`, { stdio: 'inherit' })
+        execSync(`pnpm remove ${uninstall.join(' ')}`, { stdio: 'inherit' })
       } else if (options.yarn) {
-        execSync(`yarn remove ${install.join(' ')}`, { stdio: 'inherit' })
+        execSync(`yarn remove ${uninstall.join(' ')}`, { stdio: 'inherit' })
       } else {
         execSync(`npm uninstall ${uninstall.join(' ')}`, { stdio: 'inherit' })
       }
@@ -383,11 +390,18 @@ export class DemoGenerator {
     if (options.typescript) {
       await this.#outputTemplate('tsconfig.json.ejs')
       await this.#rmFile('server.js')
-      await this.#outputTemplate('server.ejs', 'src/server.ts')
+      if (options.bun) {
+        await this.#outputTemplate('server.ejs', 'server.ts')
+        await this.#rmFile('src/server.ts')
+      } else {
+        await this.#outputTemplate('server.ejs', 'src/server.ts')
+        await this.#rmFile('server.ts')
+      }
     } else {
       await this.#rmFile('tsconfig.json')
       await this.#outputTemplate('server.ejs', 'server.js')
       await this.#rmFile('src/server.ts')
+      await this.#rmFile('server.ts')
     }
 
     if (options.drizzle) {
