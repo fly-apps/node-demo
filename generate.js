@@ -169,7 +169,7 @@ export class DemoGenerator {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {
       list.sqlite3 = 'sqlite3'
-    } else {
+    } else if (!this.options.bun) {
       list.fs = 'node:fs'
     }
 
@@ -183,9 +183,12 @@ export class DemoGenerator {
       if (!this.options.ejs) list.fs = 'node:fs'
       if (this.options.mustache) list.mustacheExpress = 'mustache-express'
     } else {
-      list.http = 'node:http'
-      list.url = 'node:url'
-      list.fs = 'node:fs'
+      if (!this.options.bun) {
+        list.http = 'node:http'
+        list.url = 'node:url'
+        list.fs = 'node:fs'
+      }
+
       if (this.options.ejs) list.ejs = 'ejs'
       if (this.options.mustache) list.mustache = 'mustache'
       if (this.options.ws) list['{ WebSocketServer }'] = 'ws'

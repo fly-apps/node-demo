@@ -1,3 +1,4 @@
+<% if (Object.keys(imports).length > 0) { -%>
 <% for (const [name, pkg] of Object.entries(imports)) { -%>
 <% if (options.typescript && !options.esm && !name.includes('{')) { -%>
 import * as <%= name %> from '<%= pkg %>';
@@ -8,6 +9,7 @@ const <%= name %> = require('<%= pkg %>');
 <% } -%>
 <% } -%>
 
+<% } -%>
 <% if (options.mongodb) { -%>
 // determine mongodb name
 const dbURL = new URL(process.env.DATABASE_URL || 'mongodb://localhost:27017/demo')
@@ -40,14 +42,14 @@ app.set('view engine', 'mustache');
 <% } else if (options.ejs) { -%>
 app.set('view engine', 'ejs');
 <% } -%>
-<% } else { -%>
+<% } else if (!options.bun) { -%>
 // set up web server
 const server = http.createServer(listener);
 <% if (options.ws) { -%>
 const wss = new WebSocketServer({ noServer: true });
 <% } -%>
-<% } -%>
 
+<% } -%>
 <% if (options.redis || ((options.postgres || options.mongodb) && !orm)) { -%>
 <%- include('_restart.ejs', { options, orm }) -%>
 
@@ -98,6 +100,20 @@ let count = 0;
 // Main page
 app.get('/', async (_request, response) => {
 <% } else { -%>
+<% if (options.bun) { -%>
+// Process requests based on pathname
+async function fetch(request<% if (options.typescript) { %> : http.IncomingMessage<% } %>) {
+  const { pathname } = new URL(request.url);
+
+  if (pathname === '/') {
+    return main(request)
+  } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
+    return new Response(Bun.file(`public${pathname}`));
+  } else {
+    return new Response("Not found.", { status: 400 });
+  }
+}
+<% } else { -%>
 // Map of file extensions to mime types
 const mimeTypes<% if (options.typescript) { %> : Record<string, string><% } %> = {
   "ico": "image/x-icon",
@@ -129,6 +145,7 @@ async function listener(request<% if (options.typescript) { %> : http.IncomingMe
     response.end("Not found.");
   }
 }
+<% } -%>
 
 // Main page
 async function main(_request<% if (options.typescript) { %> : http.IncomingMessage<% } %>, response<% if (options.typescript) { %> : http.ServerResponse<% } %>) {
@@ -181,6 +198,12 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
     contents = contents.replace('<%= count %>', count.toString());
 <% } -%>
 
+<% if (options.bun) { -%>
+    return new Response(contents, { status: 200, headers: {"Content-Type": "text/html"} });
+  } catch (error) {
+    return new Response(error + "\n", { status: 500, headers: { "Content-Type": "text/plain" }});
+  }
+<% } else { -%>
     response.writeHead(200, { "Content-Type": "text/html" });
     response.write(contents, "utf-8");
   } catch (error) {
@@ -189,6 +212,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   }
 
   response.end();
+<% } -%>
 <% } -%>
 }<% if (options.express) { %>)<% } %>;
 <% if (options.ws) { -%>
