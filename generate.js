@@ -204,7 +204,7 @@ export class DemoGenerator {
     if (this.options.bun) {
       return `await Bun.file(${name}).exists()`
     } else {
-      return `fs.fileExistSync(${name})`
+      return `fs.existsSync(${name})`
     }
   }
 

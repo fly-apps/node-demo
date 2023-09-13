@@ -130,11 +130,11 @@ async function listener(request<% if (options.typescript) { %> : http.IncomingMe
     await main(request, response)
   } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
     try {
-      let contents = <%= fileRead('`public${pathname}`') %>;
+      let contents = <%- fileRead('`public${pathname}`') %>;
       let mimeType = mimeTypes[pathname.split('.').pop()<% if (options.typescript) { %> as string<% } %>] || 'application/octet-stream'
       
       response.writeHead(200, { "Content-Type": mimeType });
-      response.write(contents, "binary");
+      response.write(contents, "utf-8");
     } catch (error) {
       response.writeHead(500, {"Content-Type": "text/plain"});
       response.write(error + "\n");
