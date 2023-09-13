@@ -263,21 +263,21 @@ export class DemoGenerator {
 
     // remove lock files from other package managers
     if (options.bun) {
-      this.#rmFile('pnpm-lock.yaml')
-      this.#rmFile('package-lock.json')
-      this.#rmFile('yarn.lock')
-    } if (options.pnpm) {
-      this.#rmFile('bun.lockb')
-      this.#rmFile('package-lock.json')
-      this.#rmFile('yarn.lock')
+      await this.#rmFile('pnpm-lock.yaml')
+      await this.#rmFile('package-lock.json')
+      await this.#rmFile('yarn.lock')
+    } else if (options.pnpm) {
+      await this.#rmFile('bun.lockb')
+      await this.#rmFile('package-lock.json')
+      await this.#rmFile('yarn.lock')
     } else if (options.yarn) {
-      this.#rmFile('bun.lockb')
-      this.#rmFile('package-lock.json')
-      this.#rmFile('pnpm-lock.yaml')
+      await this.#rmFile('bun.lockb')
+      await this.#rmFile('package-lock.json')
+      await this.#rmFile('pnpm-lock.yaml')
     } else {
-      this.#rmFile('bun.lockb')
-      this.#rmFile('pnpm-lock.yaml')
-      this.#rmFile('yarn.lock')
+      await this.#rmFile('bun.lockb')
+      await this.#rmFile('pnpm-lock.yaml')
+      await this.#rmFile('yarn.lock')
     }
 
     let install = []
