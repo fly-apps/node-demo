@@ -19,7 +19,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["<% if (!options.bun) { %>src/<% } %>**/*.ts"],
   "exclude": ["node_modules"]
 }
   
