@@ -285,7 +285,7 @@ export class DemoGenerator {
       if (!pj.dependencies[pkg]) install.push(pkg)
     }
 
-    if (install.length !== 0) {
+    if (install.length !== 0 && process.env.NODE_ENV !== 'test') {
       if (options.bun) {
         execSync(`bun add ${install.join(' ')}`, { stdio: 'inherit' })
       } else if (options.pnpm) {
