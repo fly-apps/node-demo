@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o public/index.css",
+    "start": "node server.js"
+  }
+}
