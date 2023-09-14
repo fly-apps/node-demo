@@ -1,26 +1,26 @@
 <% if (options.prisma) { -%>
   // Get current count (may return hull)
-  let welcome = await prisma.welcome.findFirst();
+  const welcome = await prisma.welcome.findFirst()
 
   // Increment count, creating table row if necessary
   if (welcome) {
-    count = welcome.count + 1;
-    await prisma.welcome.update({data: { count }, where: {id: welcome.id}});
+    count = welcome.count + 1
+    await prisma.welcome.update({data: { count }, where: {id: welcome.id}})
   } else {
-    count = 1;
-    await prisma.welcome.create({data: { count }});
+    count = 1
+    await prisma.welcome.create({data: { count }})
   }
 <% } else if (options.knex) { -%>
   // Get current count (may return null)
-  let welcome = await db.table('welcome').first();
+  const welcome = await db.table('welcome').first()
 
   // Increment count, creating table row if necessary
   if (welcome) {
-    count = welcome.count + 1;
-    await db('welcome').update({ count });
+    count = welcome.count + 1
+    await db('welcome').update({ count })
   } else {
-    count = 1;
-    await db('welcome').insert({ count });
+    count = 1
+    await db('welcome').insert({ count })
   }
 <% } else if (options.drizzle) { -%>
   // Get current count (may return null)

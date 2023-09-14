@@ -26,7 +26,7 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
       table.integer('count')
     })
   }
-    
+
 <% } else if (options.drizzle) { -%>
   // Run migrations
   await migrate(db, { migrationsFolder: "./src/db/migrations" })

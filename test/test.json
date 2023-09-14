@@ -9,5 +9,7 @@
   "sqlite3": "--sqlite3",
   "postgresql": "--postgresql",
 
-  "tailwindcss": "--tailwindcss"
+  "tailwindcss": "--tailwindcss",
+
+  "knex": "--knex"
 }
