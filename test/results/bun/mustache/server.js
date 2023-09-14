@@ -36,7 +36,7 @@ async function main(_request) {
   } catch (error) {
     return new Response(error + '\n', { status: 500, headers: { 'Content-Type': 'text/plain' } })
   }
-};
+}
 
 Bun.serve({ port: 3000, fetch })
 console.log('Server is listening on port 3000')

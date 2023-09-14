@@ -1,5 +1,8 @@
 {
   "base": "",
+
   "ejs": "--ejs",
-  "mustache": "--mustache"
+  "mustache": "--mustache",
+
+  "express": "--express"
 }

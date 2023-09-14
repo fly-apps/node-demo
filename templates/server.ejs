@@ -27,21 +27,22 @@ class Welcome {
 <% if (options.express) { -%>
 <% if (options.ws) { -%>
 // set up express and web socket
-const { app, getWss } = expressWs(express());
-const wss = getWss();
+const { app, getWss } = expressWs(express())
+const wss = getWss()
 <% } else { -%>
 // set up express web server
-const app = express();
+const app = express()
 <% } -%>
 
 // set up static content<% if (options.mustache) { %>and mustache views<% } else if (options.ejs) { %> and ejs views<% } %>
-app.use(express.static('public'));
+app.use(express.static('public'))
 <% if (options.mustache) { -%>
-app.engine('mustache', mustacheExpress());
-app.set('view engine', 'mustache');
+app.engine('mustache', mustacheExpress())
+app.set('view engine', 'mustache')
 <% } else if (options.ejs) { -%>
-app.set('view engine', 'ejs');
+app.set('view engine', 'ejs')
 <% } -%>
+
 <% } else if (!options.bun) { -%>
 // set up web server
 const server = http.createServer(listener)
@@ -98,7 +99,7 @@ let count = 0
 
 <% if (options.express) { -%>
 // Main page
-app.get('/', async (_request, response) => {
+app.get('/', async(_request, response) => {
 <% } else { -%>
 <% if (options.bun) { -%>
 // Process requests based on pathname
@@ -184,11 +185,11 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   response.render('index', { count });
 <% } else { -%>
   try {
-    let content = fs.readFileSync('views/index.<%= templateExtension %>', 'utf-8')
+    const content = fs.readFileSync('views/index.<%= templateExtension %>', 'utf-8')
       .replace('<%= count %>', count.toString())
-    response.set('Content-Type', 'text/html');
+    response.set('Content-Type', 'text/html')
     response.send(content)
-  } catch(error) {
+  } catch (error) {
     response.send()
   }
 <% } -%>
@@ -219,7 +220,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   response.end()
 <% } -%>
 <% } -%>
-}<% if (options.express) { %>)<% } %>;
+}<% if (options.express) { %>)<% } %>
 <% if (options.ws) { -%>
 
 // Define web socket route

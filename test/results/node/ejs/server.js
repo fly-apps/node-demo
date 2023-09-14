@@ -66,7 +66,7 @@ async function main(_request, response) {
   }
 
   response.end()
-};
+}
 
 // Start web server on port 3000
 server.listen(3000, () => {
