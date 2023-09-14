@@ -24,15 +24,15 @@
   }
 <% } else if (options.drizzle) { -%>
   // Get current count (may return null)
-  let welcome = await db.select().from(schema.welcome)<% if (options.sqlite3) { %>.all()<% } %>;
+  const welcome = await db.select().from(schema.welcome)<% if (options.sqlite3) { %>.all()<% } %>
 
   // Increment count, creating table row if necessary
   if (welcome?.length > 0) {
-    count = welcome[0].count + 1;
-    await db.update(schema.welcome).set({ count })<% if (options.sqlite3) { %>.run()<% } else { %>.returning()<% } %>;
+    count = welcome[0].count + 1
+    await db.update(schema.welcome).set({ count })<% if (options.sqlite3) { %>.run()<% } else { %>.returning()<% } %>
   } else {
     count = 1;
-    await db.insert(schema.welcome).values({ count })<% if (options.sqlite3) { %>.run()<% } else { %>.returning()<% } %>;
+    await db.insert(schema.welcome).values({ count })<% if (options.sqlite3) { %>.run()<% } else { %>.returning()<% } %>
   }
 <% } else if (options.mongodb) { -%>
   if (mongo.db) {
@@ -52,15 +52,15 @@
 <% } else if (options.postgres) { -%>
   if (postgres.client) {
     // fetch current count
-    let welcome = await postgres.client.query('SELECT "count" from "welcome"');
+    const welcome = await postgres.client.query('SELECT "count" from "welcome"')
 
     // increment count, creating table row if necessary
     if (!welcome.rows.length) {
-      count = 1;
-      await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count]);
+      count = 1
+      await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count])
     } else {
-      count = welcome.rows[0].count + 1;
-      await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count]);
+      count = welcome.rows[0].count + 1
+      await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count])
     }
   }
 <% } else if (options.sqlite3) { -%>

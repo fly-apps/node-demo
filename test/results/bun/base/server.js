@@ -36,5 +36,6 @@ async function main(_request) {
   }
 }
 
+// Start web server on port 3000
 Bun.serve({ port: 3000, fetch })
 console.log('Server is listening on port 3000')

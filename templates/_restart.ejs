@@ -13,28 +13,28 @@ const <%= options.mongodb ? 'mongo' : 'postgres' %> = {
 <% } -%>
 
   reconnect() {
-    if (this.interval) return;
+    if (this.interval) return
 
     this.interval = setInterval(() => {
       this.tryConnect().catch(console.log)
-    }, 1000);
+    }, 1000)
   },
 
   async tryConnect(reconnect = false) {
-    if (this.client || !this.connect || !this.disconnect) return;
+    if (this.client || !this.connect || !this.disconnect) return
 
     try {
-      await this.connect();
+      await this.connect()
 
       if (this.interval) {
-        clearInterval(this.interval);
-        this.interval = null;
+        clearInterval(this.interval)
+        this.interval = null
       }
     } catch (error) {
-      console.error(error);
-      this.disconnect();
-      if (reconnect) this.reconnect();
-      throw(error);
+      console.error(error)
+      this.disconnect()
+      if (reconnect) this.reconnect()
+      throw error
     }
   }<% if (!options.redis) { -%>,
 <% } else { %>
@@ -48,9 +48,9 @@ const subscriber = {
 
 <% } -%>
   async connect() {
-    this.client = redis.createClient({url: process.env.REDIS_URL});
+    this.client = redis.createClient({ url: process.env.REDIS_URL })
 
-    await this.client.connect();
+    await this.client.connect()
 
     // Forward messages from redis to all websocket clients
     this.client.subscribe('welcome:counter', (message<% if (options.typescript) { %> : string<% } %>) => {
@@ -59,21 +59,21 @@ const subscriber = {
 <% } -%>
 
       wss.clients.forEach(client => {
-        try { client.send(message) } catch {};
+        try { client.send(message) } catch {}
       });
     }),
 
     this.client.on('error', (err<% if (options.typescript) { %>: object<% } %>) => {
-      console.error('Redis Server Error', err);
-      this.disconnect();
-      this.reconnect();
+      console.error('Redis Server Error', err)
+      this.disconnect()
+      this.reconnect()
     })
   },
 
   disconnect() {
     if (this.client) {
-      this.client.quit();
-      this.client = null;
+      this.client.quit()
+      this.client = null
     }
   }
 };
@@ -86,7 +86,7 @@ const publisher = {
 <% } -%>
 
   async connect() {
-    this.client = redis.createClient({url: process.env.REDIS_URL});
+    this.client = redis.createClient({ url: process.env.REDIS_URL });
 
     await this.client.connect();
   },
@@ -114,53 +114,53 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
 <% if (options.mongodb) { -%>
     this.client = new mongodb.MongoClient(dbURL.toString());
 <% } else { -%>
-    this.client = new pg.Client({connectionString: process.env.DATABASE_URL});
+    this.client = new pg.Client({ connectionString: process.env.DATABASE_URL })
 <% } -%>
 
-    await this.client.connect();
+    await this.client.connect()
 <% if (options.mongodb) { -%>
 
-    this.db = this.client.db(dbName);
+    this.db = this.client.db(dbName)
 
 <% if (options.ws) { -%>
     // Forward changes to all websocket clients
-    const changestream = this.db.watch();
+    const changestream = this.db.watch()
     changestream.on('change', change => {
-      let update = { count: 0 }<% if (options.typescript) {%> as Welcome<% } %>;
+      let update = { count: 0 }<% if (options.typescript) {%> as Welcome<% } %>
 
       if (change.operationType === 'insert') {
-        update = change.fullDocument<% if (options.typescript) {%> as Welcome<% } %>;
+        update = change.fullDocument<% if (options.typescript) {%> as Welcome<% } %>
       } else if (change.operationType === 'update') {
-        update = change.updateDescription.updatedFields<% if (options.typescript) {%> as Welcome<% } %>;
+        update = change.updateDescription.updatedFields<% if (options.typescript) {%> as Welcome<% } %>
       }
 
-      if (!update.count) return;
+      if (!update.count) return
 
-      count = update.count;
+      count = update.count
 
 <% if (options.htmx) { -%>
-      const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`;
+      const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`
 
 <% } -%>
       wss.clients.forEach(client => {
-        try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {};
-      });
-    });
+        try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {}
+      })
+    })
 <% } -%>
 <% } -%>
 
     this.client.on('<%= options.mongodb ? 'topologyClosed' : 'end' %>', event => {
-      this.disconnect();
-      this.reconnect();
-    });
+      this.disconnect()
+      this.reconnect()
+    })
   },
 
   disconnect() {
     if (this.client) {
-      this.client.<%= options.mongodb ? 'close' : 'end' %>();
-      this.client = null;
+      this.client.<%= options.mongodb ? 'close' : 'end' %>()
+      this.client = null
 <% if (options.mongodb) { -%>
-      this.db = null;
+      this.db = null
 <% } -%>
     }
   }
