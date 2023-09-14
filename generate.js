@@ -302,7 +302,7 @@ export class DemoGenerator {
       if (!pj.devDependencies[pkg]) install.push(pkg)
     }
 
-    if (install.length !== 0) {
+    if (install.length !== 0 && process.env.NODE_ENV !== 'test') {
       if (options.bun) {
         execSync(`bun add -d ${install.join(' ')}`, { stdio: 'inherit' })
       } if (options.pnpm) {
@@ -321,7 +321,7 @@ export class DemoGenerator {
       if (!dependencies.includes(pkg)) uninstall.push(pkg)
     }
 
-    if (uninstall.length !== 0) {
+    if (uninstall.length !== 0 && process.env.NODE_ENV !== 'test') {
       if (options.bun) {
         execSync(`bun remove ${uninstall.join(' ')}`, { stdio: 'inherit' })
       } if (options.pnpm) {
@@ -346,21 +346,23 @@ export class DemoGenerator {
     pj.scripts ||= {}
 
     // install packages
-    if (options.bun) {
-      if (!fs.existsSync('bun.lockb')) {
-        execSync('bun install', { stdio: 'inherit' })
-      }
-    } else if (options.pnpm) {
-      if (!fs.existsSync('pnpm-lock.yaml')) {
-        execSync('pnpm install', { stdio: 'inherit' })
-      }
-    } else if (options.yarn) {
-      if (!fs.existsSync('yarn.lock')) {
-        execSync('yarn install', { stdio: 'inherit' })
-      }
-    } else {
-      if (!fs.existsSync('package-lock.json')) {
-        execSync('npm install', { stdio: 'inherit' })
+    if (install.length === 0 && process.env.NODE_ENV !== 'test') {
+      if (options.bun) {
+        if (!fs.existsSync('bun.lockb')) {
+          execSync('bun install', { stdio: 'inherit' })
+        }
+      } else if (options.pnpm) {
+        if (!fs.existsSync('pnpm-lock.yaml')) {
+          execSync('pnpm install', { stdio: 'inherit' })
+        }
+      } else if (options.yarn) {
+        if (!fs.existsSync('yarn.lock')) {
+          execSync('yarn install', { stdio: 'inherit' })
+        }
+      } else {
+        if (!fs.existsSync('package-lock.json')) {
+          execSync('npm install', { stdio: 'inherit' })
+        }
       }
     }
 
@@ -474,7 +476,7 @@ export class DemoGenerator {
 
       await this.#writeFile('public/index.css', proposed)
 
-      if (!fs.existsSync('.git')) {
+      if (!fs.existsSync('.git') && process.env.NODE_ENV !== 'test') {
         execSync('git init -b main', { stdio: 'inherit' })
       }
     }

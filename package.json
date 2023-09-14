@@ -10,7 +10,9 @@
   "scripts": {
     "eslint": "eslint .",
     "eslint:fix": "eslint --fix .",
-    "release": "./scripts/release.js"
+    "release": "./scripts/release.js",
+    "test": "mocha  --spec test/test.js",
+    "test:capture": "TEST_CAPTURE=1 mocha"
   },
   "author": "Sam Ruby",
   "license": "MIT",

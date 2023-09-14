@@ -3,6 +3,8 @@ env:
   es2021: true
   mocha: true
 extends: standard
+globals:
+  Bun: readable
 overrides: []
 parserOptions:
   ecmaVersion: latest
