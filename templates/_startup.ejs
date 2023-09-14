@@ -6,8 +6,8 @@ if (process.env.NODE_ENV === 'production') {
 
 <% } else if (options.sqlite3 && !orm) { -%>
 // Ensure welcome table exists
-db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
-  
+db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
+
 <% } -%>
 <% if (options.redis || options.knex || ((options.mongodb || options.postgres) && !orm) || options.drizzle) { -%>
 (async () => {

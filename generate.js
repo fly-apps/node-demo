@@ -37,7 +37,7 @@ export class DemoGenerator {
     if (this.options.sqlite3) {
       if (this.options.drizzle) {
         list.push('better-sqlite3')
-      } else {
+      } else if (!this.options.bun) {
         list.push('sqlite3')
       }
     }
@@ -175,7 +175,11 @@ export class DemoGenerator {
     } else if (this.options.postgres) {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {
-      list.sqlite3 = 'sqlite3'
+      if (this.options.bun) {
+        list.sqlite3 = 'bun:sqlite'
+      } else {
+        list.sqlite3 = 'sqlite3'
+      }
     } else if (!this.options.bun) {
       list.fs = 'node:fs'
     }

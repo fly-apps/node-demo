@@ -64,6 +64,20 @@
     }
   }
 <% } else if (options.sqlite3) { -%>
+<% if (options.bun) { -%>
+  // increment count, creating table row if necessary
+  const row = db.query('SELECT "count" from "welcome"').get()
+  let query = 'UPDATE "welcome" SET "count" = ?'
+
+  if (row) {
+    count = row.count + 1
+  } else {
+    count = 1
+    query = 'INSERT INTO "welcome" VALUES(?)'
+  }
+
+  db.query(query).run(count)
+<% } else { -%>
   // increment count, creating table row if necessary
   await new Promise<% if (options.typescript) { %><void><% } %>((resolve, reject) => {
 <% if (options.typescript) { -%>
@@ -73,15 +87,15 @@
 
 <% } -%>
     db.get('SELECT "count" from "welcome"', (err, row<% if (options.typescript) { %>: Welcome | null<% } %>) => {
-      let query = 'UPDATE "welcome" SET "count" = ?';
+      let query = 'UPDATE "welcome" SET "count" = ?'
 
       if (err) {
-        reject(err);
+        reject(err)
         return
       } else if (row) {
-        count = row.count + 1;
+        count = row.count + 1
       } else {
-        count = 1;
+        count = 1
         query = 'INSERT INTO "welcome" VALUES(?)'
       }
 
@@ -89,7 +103,8 @@
         err ? reject(err) : resolve()
       })
     })
-  });
+  })
+<% } -%>
 <% } else { -%>
   // increment counter in counter.txt file
   try {

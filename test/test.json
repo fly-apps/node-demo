@@ -4,5 +4,7 @@
   "ejs": "--ejs",
   "mustache": "--mustache",
 
-  "express": "--express"
+  "express": "--express",
+
+  "sqlite3": "--sqlite3"
 }
