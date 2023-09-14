@@ -93,10 +93,10 @@
 <% } else { -%>
   // increment counter in counter.txt file
   try {
-    count = parseInt(<%- fileRead("'counter.txt'") %>) + 1;
+    count = parseInt(<%- fileRead("'counter.txt'") %>) + 1
   } catch {
-    count = 1;
+    count = 1
   }
 
-  <%- fileWrite("'counter.txt'", 'count.toString()') %>;
+  <%- fileWrite("'counter.txt'", 'count.toString()') %>
 <% } -%>

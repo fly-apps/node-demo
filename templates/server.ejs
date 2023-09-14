@@ -1,11 +1,11 @@
 <% if (Object.keys(imports).length > 0) { -%>
 <% for (const [name, pkg] of Object.entries(imports)) { -%>
 <% if (options.typescript && !options.esm && !options.bun && !name.includes('{')) { -%>
-import * as <%= name %> from '<%= pkg %>';
+import * as <%= name %> from '<%= pkg %>'
 <% } else if (options.typescript || options.esm) { -%>
-import <%= name %> from '<%= pkg %>';
+import <%= name %> from '<%= pkg %>'
 <% } else { -%>
-const <%= name %> = require('<%= pkg %>');
+const <%= name %> = require('<%= pkg %>')
 <% } -%>
 <% } -%>
 
@@ -44,7 +44,7 @@ app.set('view engine', 'ejs');
 <% } -%>
 <% } else if (!options.bun) { -%>
 // set up web server
-const server = http.createServer(listener);
+const server = http.createServer(listener)
 <% if (options.ws) { -%>
 const wss = new WebSocketServer({ noServer: true });
 <% } -%>
@@ -94,7 +94,7 @@ const db = new sqlite3.Database(new URL(process.env.DATABASE_URL).pathname);
 
 <% } -%>
 // last known count
-let count = 0;
+let count = 0
 
 <% if (options.express) { -%>
 // Main page
@@ -103,46 +103,47 @@ app.get('/', async (_request, response) => {
 <% if (options.bun) { -%>
 // Process requests based on pathname
 async function fetch(request<% if (options.typescript) { %> : Request) : Promise<Response><% }else { %>)<% } %> {
-  const { pathname } = new URL(request.url);
+  const { pathname } = new URL(request.url)
 
   if (pathname === '/') {
     return main(request)
   } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
-    return new Response(Bun.file(`public${pathname}`));
+    return new Response(Bun.file(`public${pathname}`))
   } else {
-    return new Response("Not found.", { status: 400 });
+    return new Response('Not found.', { status: 400 })
   }
 }
 <% } else { -%>
 // Map of file extensions to mime types
 const mimeTypes<% if (options.typescript) { %> : Record<string, string><% } %> = {
-  "ico": "image/x-icon",
-  "js": "text/javascript",
-  "css": "text/css",
-  "svg": "image/svg+xml"
-};
+  ico: 'image/x-icon',
+  js: 'text/javascript',
+  css: 'text/css',
+  svg: 'image/svg+xml'
+}
 
 // Process requests based on pathname
 async function listener(request<% if (options.typescript) { %> : http.IncomingMessage<% } %>, response<% if (options.typescript) { %> : http.ServerResponse<% } %>) {
-  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>);
-  
+  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>)
+
   if (pathname === '/') {
     await main(request, response)
   } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
     try {
-      let contents = <%- fileRead('`public${pathname}`') %>;
-      let mimeType = mimeTypes[pathname.split('.').pop()<% if (options.typescript) { %> as string<% } %>] || 'application/octet-stream'
-      
-      response.writeHead(200, { "Content-Type": mimeType });
-      response.write(contents, "utf-8");
+      const contents = <%- fileRead('`public${pathname}`') %>
+      const mimeType = mimeTypes[pathname.split('.').pop()<% if (options.typescript) { %> as string<% } %>] || 'application/octet-stream'
+
+      response.writeHead(200, { 'Content-Type': mimeType })
+      response.write(contents, 'utf-8')
     } catch (error) {
-      response.writeHead(500, {"Content-Type": "text/plain"});
-      response.write(error + "\n");
+      response.writeHead(500, { 'Content-Type': 'text/plain' })
+      response.write(error + '\n')
     }
-    response.end();
+
+    response.end()
   } else {
-    response.writeHead(400);
-    response.end("Not found.");
+    response.writeHead(400)
+    response.end('Not found.')
   }
 }
 <% } -%>
@@ -184,7 +185,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } else { -%>
   try {
     let content = fs.readFileSync('views/index.<%= templateExtension %>', 'utf-8')
-      .replace('<%= count %>', count.toString());
+      .replace('<%= count %>', count.toString())
     response.set('Content-Type', 'text/html');
     response.send(content)
   } catch(error) {
@@ -193,29 +194,29 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <% } else { -%>
   try {
-    let contents = <%- fileRead(`'views/index.${templateExtension}'`) %>;
+    let contents = <%- fileRead(`'views/index.${templateExtension}'`) %>
 <% if (options.mustache) { -%>
-    contents = mustache.render(contents, { count });
+    contents = mustache.render(contents, { count })
 <% } else if (options.ejs) { -%>
-    contents = ejs.render(contents, { count });
+    contents = ejs.render(contents, { count })
 <% } else { -%>
-    contents = contents.replace('<%= count %>', count.toString());
+    contents = contents.replace('<%= count %>', count.toString())
 <% } -%>
 
 <% if (options.bun) { -%>
-    return new Response(contents, { status: 200, headers: {"Content-Type": "text/html"} });
+    return new Response(contents, { status: 200, headers: { 'Content-Type': 'text/html' } })
   } catch (error) {
-    return new Response(error + "\n", { status: 500, headers: { "Content-Type": "text/plain" }});
+    return new Response(error + '\n', { status: 500, headers: { 'Content-Type': 'text/plain' } })
   }
 <% } else { -%>
-    response.writeHead(200, { "Content-Type": "text/html" });
-    response.write(contents, "utf-8");
+    response.writeHead(200, { 'Content-Type': 'text/html' })
+    response.write(contents, 'utf-8')
   } catch (error) {
-    response.writeHead(500, {"Content-Type": "text/plain"});
-    response.write(error + "\n");
+    response.writeHead(500, { 'Content-Type': 'text/plain' })
+    response.write(error + '\n')
   }
 
-  response.end();
+  response.end()
 <% } -%>
 <% } -%>
 }<% if (options.express) { %>)<% } %>;
@@ -226,7 +227,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 app.ws('/websocket', (ws) => {
 <% } else { -%>
 server.on('upgrade', (request, socket, head) => {
-  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>);
+  const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>)
 
   if (pathname === '/websocket') {
     wss.handleUpgrade(request, socket, head, (ws) => {

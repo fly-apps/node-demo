@@ -51,11 +51,11 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )');
   });
 })();
 <% } else if (options.bun && !options.express) { -%>
-Bun.serve({ port: 3000, fetch });
-console.log('Server is listening on port 3000');
+Bun.serve({ port: 3000, fetch })
+console.log('Server is listening on port 3000')
 <% } else { -%>
 // Start web server on port 3000
 <% if (options.express) { %>app<% } else { %>server<% } %>.listen(3000, () => {
-  console.log('Server is listening on port 3000');
-});
+  console.log('Server is listening on port 3000')
+})
 <% } -%>
