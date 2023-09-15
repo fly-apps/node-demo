@@ -11,5 +11,7 @@
 
   "tailwindcss": "--tailwindcss",
 
-  "knex": "--knex"
+  "knex": "--knex",
+
+  "websocket": "--websocket"
 }

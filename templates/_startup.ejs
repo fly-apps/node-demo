@@ -47,7 +47,7 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
 <% } -%>
 <% if (options.bun && !options.express) { -%>
   // Start web server on port 3000
-  Bun.serve({ port: 3000, fetch })
+  Bun.serve({ port: 3000, fetch<% if (options.ws) { %>, websocket<% } %> })
   console.log('Server is listening on port 3000')
 <% } else { -%>
   // Start web server on port 3000
@@ -58,7 +58,7 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
 })()
 <% } else if (options.bun && !options.express) { -%>
 // Start web server on port 3000
-Bun.serve({ port: 3000, fetch })
+Bun.serve({ port: 3000, fetch<% if (options.ws) { %>, websocket<% } %> })
 console.log('Server is listening on port 3000')
 <% } else { -%>
 // Start web server on port 3000

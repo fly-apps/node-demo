@@ -47,7 +47,7 @@ export class DemoGenerator {
       if (this.options.ws) list.push('express-ws')
       if (this.options.mustache) list.push('mustache-express')
     } else {
-      if (this.options.ws) list.push('ws')
+      if (this.options.ws && !this.options.bun) list.push('ws')
       if (this.options.mustache) list.push('mustache')
     }
 
@@ -202,7 +202,7 @@ export class DemoGenerator {
 
       if (this.options.ejs) list.ejs = 'ejs'
       if (this.options.mustache) list.mustache = 'mustache'
-      if (this.options.ws) list['{ WebSocketServer }'] = 'ws'
+      if (this.options.ws && !this.options.bun) list['{ WebSocketServer }'] = 'ws'
     }
 
     return Object.fromEntries(Object.entries(list).sort((a, b) => {
@@ -564,7 +564,6 @@ export class DemoGenerator {
               break
 
             case 'd':
-              console.log(proposed)
               console.log(Diff.createPatch(name, current, proposed, 'current', 'proposed').trimEnd() + '\n')
               break
 

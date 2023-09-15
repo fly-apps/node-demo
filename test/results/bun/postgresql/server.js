@@ -61,7 +61,7 @@ async function fetch(request) {
   } else if (await Bun.file(`public${pathname}`).exists()) {
     return new Response(Bun.file(`public${pathname}`))
   } else {
-    return new Response('Not found.', { status: 400 })
+    return new Response('Not found.', { status: 404 })
   }
 }
 

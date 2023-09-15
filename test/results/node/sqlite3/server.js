@@ -41,7 +41,7 @@ async function listener(request, response) {
 
     response.end()
   } else {
-    response.writeHead(400)
+    response.writeHead(404)
     response.end('Not found.')
   }
 }

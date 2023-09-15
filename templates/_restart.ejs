@@ -58,7 +58,7 @@ const subscriber = {
       message = `<div id="counter" hx-swap-oob="innerHTML">${message}</div>`
 <% } -%>
 
-      wss.clients.forEach(client => {
+      <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
         try { client.send(message) } catch {}
       });
     }),
@@ -142,7 +142,7 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
       const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`
 
 <% } -%>
-      wss.clients.forEach(client => {
+      <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
         try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {}
       })
     })

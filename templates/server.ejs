@@ -47,8 +47,12 @@ app.set('view engine', 'ejs')
 // set up web server
 const server = http.createServer(listener)
 <% if (options.ws) { -%>
-const wss = new WebSocketServer({ noServer: true });
+const wss = new WebSocketServer({ noServer: true })
 <% } -%>
+
+<% } else if (options.ws) { -%>
+// list of active websocket sessions
+const clients = new Set()
 
 <% } -%>
 <% if (options.redis || ((options.postgres || options.mongodb) && !orm)) { -%>
@@ -103,15 +107,24 @@ app.get('/', async(_request, response) => {
 <% } else { -%>
 <% if (options.bun) { -%>
 // Process requests based on pathname
-async function fetch(request<% if (options.typescript) { %> : Request) : Promise<Response><% }else { %>)<% } %> {
+<% if (options.typescript) { -%>
+async function fetch(request : Request<% if (options.ws) { %>, server<% } %>) : Promise<Response {
+<% } else { -%>
+async function fetch(request<% if (options.ws) { %>, server<% } %>) {
+<% } -%>
   const { pathname } = new URL(request.url)
 
   if (pathname === '/') {
     return main(request)
+<% if (options.ws) { -%>
+  } else if (pathname === '/websocket') {
+    if (server.upgrade(request)) return
+    return new Response('Not found.', { status: 404 })
+<% } -%>
   } else if (<% if (options.typescript) { %>pathname && <% } %><%= fileExists('`public${pathname}`') %>) {
     return new Response(Bun.file(`public${pathname}`))
   } else {
-    return new Response('Not found.', { status: 400 })
+    return new Response('Not found.', { status: 404 })
   }
 }
 <% } else { -%>
@@ -143,7 +156,7 @@ async function listener(request<% if (options.typescript) { %> : http.IncomingMe
 
     response.end()
   } else {
-    response.writeHead(400)
+    response.writeHead(404)
     response.end('Not found.')
   }
 }
@@ -157,7 +170,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% } -%>
 <% } -%>
 <% if (options.ws) { -%>
-  let oldCount = count;
+  const oldCount = count
 
 <% } -%>
 <%- include('_update.ejs', { options, fileRead, fileWrite }) -%>
@@ -166,15 +179,15 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
   if (oldCount !== count) {
 <% if (options.redis) { -%>
     // publish new count on redis
-    publisher.client?.publish('welcome:counter', count.toString());
+    publisher.client?.publish('welcome:counter', count.toString())
 <% } else { -%>
     // publish new count to all websocket clients
 <% if (options.htmx) { -%>
     const message = `<div id="counter" hx-swap-oob="innerHTML">${count}</div>`
 <% } -%>
-    wss.clients.forEach(client => {
-      try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {};
-    });
+    <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
+      try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {}
+    })
 <% } -%>
   }
 
@@ -223,30 +236,51 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 }<% if (options.express) { %>)<% } %>
 <% if (options.ws) { -%>
 
-// Define web socket route
+// Define web socket<% if (options.express) { %>route<% } %>
 <% if (options.express) { -%>
 app.ws('/websocket', (ws) => {
+<% } else if (options.bun) { -%>
+// Define web socket
+const websocket = {
+  open(ws) {
+    clients.add(ws)
+
+    // update client on a best effort basis
+    if (count) try { ws.send(count.toString()) } catch {}
+  },
+
+  close(ws) {
+    clients.delete(ws)
+  },
+
+  // We don’t expect any messages on websocket, but log any ones we do get.
+  message(ws, message) {
+    console.log(message)
+  }
+}
 <% } else { -%>
 server.on('upgrade', (request, socket, head) => {
   const { pathname } = url.parse(request.url<% if (options.typescript) { %> as string<% } %>)
 
   if (pathname === '/websocket') {
     wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
+      wss.emit('connection', ws, request)
+    })
   } else {
-    socket.destroy();
+    socket.destroy()
   }
-});
+})
 
 wss.on('connection', (ws) => {
 <% } -%>
+<% if (!options.bun) { -%>
   // update client on a best effort basis
-  if (count) try { ws.send(count.toString()) } catch {};
+  if (count) try { ws.send(count.toString()) } catch {}
 
   // We don’t expect any messages on websocket, but log any ones we do get.
-  ws.on('message', console.log);
-});
+  ws.on('message', console.log)
+})
+<% } -%>
 <% } -%>
 
 <%- include('_startup.ejs', { options, orm }) -%>
