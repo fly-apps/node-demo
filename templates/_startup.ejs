@@ -15,7 +15,7 @@ db.run('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
   // try to connect to each service
   await Promise.all([
     subscriber.tryConnect(true),
-    publisher.tryConnect(true)<% if (options.postgres) { %>,
+    publisher.tryConnect(true)<% if (options.postgres && !orm) { %>,
     postgres.tryConnect(true)<% } %>
   ])
 

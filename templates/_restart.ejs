@@ -97,14 +97,14 @@ const publisher = {
     }
   }
 }
-<% if (options.mongodb || options.postgres) { -%>
+<% if (options.mongodb || (options.postgres && !orm)) { -%>
 
 // <%= options.mongodb ? 'mongodb' : 'postgresdb' %> client
 const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
   ...reconnect,
 <% } -%>
 <% } -%>
-<% if (options.mongodb || options.postgres) { -%>
+<% if (options.mongodb || (options.postgres && !orm)) { -%>
 <% if (options.typescript) { -%>
   client: null as <%= options.mongodb ? 'mongodb.MongoClient' : 'pg.Client' %> | null,
 <% if (options.mongodb) { -%>
