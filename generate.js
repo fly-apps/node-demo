@@ -176,7 +176,7 @@ export class DemoGenerator {
       list.pg = 'pg'
     } else if (this.options.sqlite3) {
       if (this.options.bun) {
-        list.sqlite3 = 'bun:sqlite'
+        list['{ Database }'] = 'bun:sqlite'
       } else {
         list.sqlite3 = 'sqlite3'
       }

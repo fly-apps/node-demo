@@ -65,8 +65,14 @@
   }
 <% } else if (options.sqlite3) { -%>
 <% if (options.bun) { -%>
+<% if (options.typescript) { -%>
+  interface Welcome {
+    count: number
+  };
+
+<% } -%>
   // increment count, creating table row if necessary
-  const row = db.query('SELECT "count" from "welcome"').get()
+  const row = db.query('SELECT "count" from "welcome"').get()<% if (options.typescript) { %> as Welcome<% } %>
   let query = 'UPDATE "welcome" SET "count" = ?'
 
   if (row) {

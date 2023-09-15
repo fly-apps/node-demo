@@ -1,9 +1,9 @@
-import sqlite3 from 'bun:sqlite'
+import { Database } from 'bun:sqlite'
 import url from 'node:url'
 
 // open database
 process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString()
-const db = new sqlite3.Database(new URL(process.env.DATABASE_URL).pathname.slice(1))
+const db = new Database(new URL(process.env.DATABASE_URL).pathname.slice(1))
 
 // last known count
 let count = 0

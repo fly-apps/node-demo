@@ -95,7 +95,7 @@ const db = knex({
 <% } else if (options.sqlite3) { -%>
 // open database
 process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString()
-const db = new sqlite3.Database(new URL(process.env.DATABASE_URL).pathname.slice(1))
+const db = new <% if (!options.bun) { %>sqlite3.<% } %>Database(new URL(process.env.DATABASE_URL).pathname.slice(1))
 
 <% } -%>
 // last known count
@@ -108,7 +108,7 @@ app.get('/', async(_request, response) => {
 <% if (options.bun) { -%>
 // Process requests based on pathname
 <% if (options.typescript) { -%>
-async function fetch(request : Request<% if (options.ws) { %>, server<% } %>) : Promise<Response {
+async function fetch(request : Request<% if (options.ws) { %>, server<% } %>) : Promise<Response> {
 <% } else { -%>
 async function fetch(request<% if (options.ws) { %>, server<% } %>) {
 <% } -%>
@@ -236,7 +236,7 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 }<% if (options.express) { %>)<% } %>
 <% if (options.ws) { -%>
 
-// Define web socket<% if (options.express) { %>route<% } %>
+// Define web socket<% if (options.express) { %> route<% } %>
 <% if (options.express) { -%>
 app.ws('/websocket', (ws) => {
 <% } else if (options.bun) { -%>

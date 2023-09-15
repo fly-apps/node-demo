@@ -35,7 +35,7 @@ const postgres = {
 
     await this.client.connect()
 
-    this.client.on('end', event => {
+    this.client.on('end', () => {
       this.disconnect()
       this.reconnect()
     })

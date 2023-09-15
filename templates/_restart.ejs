@@ -151,7 +151,7 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
 <% } -%>
 <% } -%>
 
-    this.client.on('<%= options.mongodb ? 'topologyClosed' : 'end' %>', event => {
+    this.client.on('<%= options.mongodb ? 'topologyClosed' : 'end' %>', () => {
       this.disconnect()
       this.reconnect()
     })
