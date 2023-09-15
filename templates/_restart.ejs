@@ -57,11 +57,10 @@ const subscriber = {
 <% if (options.htmx) { -%>
       message = `<div id="counter" hx-swap-oob="innerHTML">${message}</div>`
 <% } -%>
-
       <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
         try { client.send(message) } catch {}
-      });
-    }),
+      })
+    })
 
     this.client.on('error', (err<% if (options.typescript) { %>: object<% } %>) => {
       console.error('Redis Server Error', err)
@@ -76,7 +75,7 @@ const subscriber = {
       this.client = null
     }
   }
-};
+}
 
 // redis publisher
 const publisher = {
@@ -86,23 +85,26 @@ const publisher = {
 <% } -%>
 
   async connect() {
-    this.client = redis.createClient({ url: process.env.REDIS_URL });
+    this.client = redis.createClient({ url: process.env.REDIS_URL })
 
-    await this.client.connect();
+    await this.client.connect()
   },
 
   disconnect() {
     if (this.client) {
-      this.client.quit();
-      this.client = null;
+      this.client.quit()
+      this.client = null
     }
   }
 }
+<% if (options.mongodb || options.postgres) { -%>
 
 // <%= options.mongodb ? 'mongodb' : 'postgresdb' %> client
 const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
   ...reconnect,
 <% } -%>
+<% } -%>
+<% if (options.mongodb || options.postgres) { -%>
 <% if (options.typescript) { -%>
   client: null as <%= options.mongodb ? 'mongodb.MongoClient' : 'pg.Client' %> | null,
 <% if (options.mongodb) { -%>
@@ -165,3 +167,4 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
     }
   }
 }
+<% } -%>

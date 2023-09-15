@@ -14,5 +14,6 @@
   "knex": "--knex",
 
   "websocket": "--websocket",
-  "htmx": "--htmx"
+  "htmx": "--htmx",
+  "redis": "--redis"
 }

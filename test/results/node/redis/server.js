@@ -1,13 +1,16 @@
+const { WebSocketServer } = require('ws')
 const fs = require('node:fs')
 const http = require('node:http')
-const pg = require('pg')
+const redis = require('redis')
 const url = require('node:url')
 
 // set up web server
 const server = http.createServer(listener)
+const wss = new WebSocketServer({ noServer: true })
 
-// postgres client
-const postgres = {
+// common reconnect logic for postgres, redis clients
+const reconnect = {
+  client: null,
   interval: null,
 
   reconnect() {
@@ -34,14 +37,26 @@ const postgres = {
       if (reconnect) this.reconnect()
       throw error
     }
-  },
+  }
+}
 
+// redis subscriber
+const subscriber = {
+  ...reconnect,
   async connect() {
-    this.client = new pg.Client({ connectionString: process.env.DATABASE_URL })
+    this.client = redis.createClient({ url: process.env.REDIS_URL })
 
     await this.client.connect()
 
-    this.client.on('end', event => {
+    // Forward messages from redis to all websocket clients
+    this.client.subscribe('welcome:counter', (message) => {
+      wss.clients.forEach(client => {
+        try { client.send(message) } catch {}
+      })
+    })
+
+    this.client.on('error', (err) => {
+      console.error('Redis Server Error', err)
       this.disconnect()
       this.reconnect()
     })
@@ -49,7 +64,25 @@ const postgres = {
 
   disconnect() {
     if (this.client) {
-      this.client.end()
+      this.client.quit()
+      this.client = null
+    }
+  }
+}
+
+// redis publisher
+const publisher = {
+  ...reconnect,
+
+  async connect() {
+    this.client = redis.createClient({ url: process.env.REDIS_URL })
+
+    await this.client.connect()
+  },
+
+  disconnect() {
+    if (this.client) {
+      this.client.quit()
       this.client = null
     }
   }
@@ -93,18 +126,20 @@ async function listener(request, response) {
 
 // Main page
 async function main(_request, response) {
-  if (postgres.client) {
-    // fetch current count
-    const welcome = await postgres.client.query('SELECT "count" from "welcome"')
+  const oldCount = count
 
-    // increment count, creating table row if necessary
-    if (!welcome.rows.length) {
-      count = 1
-      await postgres.client?.query('INSERT INTO "welcome" VALUES($1)', [count])
-    } else {
-      count = welcome.rows[0].count + 1
-      await postgres.client?.query('UPDATE "welcome" SET "count" = $1', [count])
-    }
+  // increment counter in counter.txt file
+  try {
+    count = parseInt(fs.readFileSync('counter.txt', 'utf-8')) + 1
+  } catch {
+    count = 1
+  }
+
+  fs.writeFileSync('counter.txt', count.toString())
+
+  if (oldCount !== count) {
+    // publish new count on redis
+    publisher.client?.publish('welcome:counter', count.toString())
   }
 
   // render HTML response
@@ -122,12 +157,33 @@ async function main(_request, response) {
   response.end()
 }
 
-;(async() => {
-  // try to connect to postgres
-  await postgres.tryConnect(true)
+// Define web socket
+server.on('upgrade', (request, socket, head) => {
+  const { pathname } = url.parse(request.url)
 
-  // Ensure welcome table exists
-  await postgres.client?.query('CREATE TABLE IF NOT EXISTS "welcome" ( "count" INTEGER )')
+  if (pathname === '/websocket') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request)
+    })
+  } else {
+    socket.destroy()
+  }
+})
+
+wss.on('connection', (ws) => {
+  // update client on a best effort basis
+  if (count) try { ws.send(count.toString()) } catch {}
+
+  // We don’t expect any messages on websocket, but log any ones we do get.
+  ws.on('message', console.log)
+})
+
+;(async() => {
+  // try to connect to each service
+  await Promise.all([
+    subscriber.tryConnect(true),
+    publisher.tryConnect(true)
+  ])
 
   // Start web server on port 3000
   server.listen(3000, () => {

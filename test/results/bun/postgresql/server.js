@@ -92,7 +92,7 @@ async function main(_request) {
   }
 }
 
-(async() => {
+;(async() => {
   // try to connect to postgres
   await postgres.tryConnect(true)
 

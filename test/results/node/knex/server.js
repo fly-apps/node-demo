@@ -79,7 +79,7 @@ async function main(_request, response) {
   response.end()
 }
 
-(async() => {
+;(async() => {
   // Ensure welcome table exists
   if (!(await db.schema.hasTable('welcome'))) {
     await db.schema.createTable('welcome', table => {
