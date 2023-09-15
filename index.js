@@ -18,6 +18,10 @@ const options = yargs((hideBin(process.argv)))
     describe: 'use bun as the package installer',
     type: 'boolean'
   })
+  .option('cjs', {
+    describe: 'use require (cjs) instead of imports (es6)',
+    type: 'boolean'
+  })
   .option('drizzle', {
     describe: 'use drizzle ORM for databases',
     type: 'boolean'

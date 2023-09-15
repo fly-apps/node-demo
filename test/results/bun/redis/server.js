@@ -1,4 +1,4 @@
-const redis = require('redis')
+import redis from 'redis'
 
 // list of active websocket sessions
 const clients = new Set()

@@ -1,4 +1,4 @@
-const pg = require('pg')
+import pg from 'pg'
 
 // postgres client
 const postgres = {

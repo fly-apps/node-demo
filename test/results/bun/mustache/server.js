@@ -1,4 +1,4 @@
-const mustache = require('mustache')
+import mustache from 'mustache'
 
 // last known count
 let count = 0

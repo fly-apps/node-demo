@@ -1,5 +1,5 @@
-const express = require('express')
-const fs = require('node:fs')
+import express from 'express'
+import fs from 'node:fs'
 
 // set up express web server
 const app = express()

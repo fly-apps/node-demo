@@ -255,6 +255,8 @@ export class DemoGenerator {
 
     if (typeof Bun !== 'undefined') options.bun = true
 
+    if (options.bun && !options.cjs) options.esm = true
+
     let pj = {}
 
     try {
@@ -373,7 +375,7 @@ export class DemoGenerator {
     let update = false
     if (pj.scripts.build !== this.build) update = true
     if (pj.scripts.start !== this.start) update = true
-    if (options.esm && pj.type !== 'module') update = true
+    if (!options.bun && options.esm && pj.type !== 'module') update = true
     if (!options.esm && pj.type) update = true
 
     if (update) {
@@ -383,10 +385,12 @@ export class DemoGenerator {
       if (!this.build) delete pj.build
       if (!this.start) delete pj.start
 
-      if (!options.esm) {
-        delete pj.type
-      } else if (pj.type !== 'module') {
-        pj.type = 'module'
+      if (!options.bun) {
+        if (!options.esm) {
+          delete pj.type
+        } else if (pj.type !== 'module') {
+          pj.type = 'module'
+        }
       }
 
       console.log(`${chalk.bold.green('update'.padStart(11, ' '))}  package.json`)

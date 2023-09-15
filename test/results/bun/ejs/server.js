@@ -1,4 +1,4 @@
-const ejs = require('ejs')
+import ejs from 'ejs'
 
 // last known count
 let count = 0

@@ -1,5 +1,5 @@
-const knex = require('knex')
-const url = require('node:url')
+import knex from 'knex'
+import url from 'node:url'
 
 // open database
 process.env.DATABASE_URL ||= url.pathToFileURL('production.sqlite3').toString()
