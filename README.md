@@ -2,7 +2,7 @@
 
 Provides a Node.js demo with minimal (and selectable) set of dependencies.
 
-See [blog post](https://fly.io/blog/vanilla-candy-sprinkles/) for more information.
+See [blog post](https://fly.io/javascript-journal/vanilla-candy-sprinkles/) for more information.
 
 ## Usage
 
@@ -68,7 +68,11 @@ npx node-demo
 
 ## Testing
 
-A testing strategy has not yet been adopted.  The combinatorics of the above options are mind boggling!
+A testing strategy is evolving.  The combinatorics of the above options are mind boggling!
+
+What tests we have can be run with `npm test`.  This runs a series of tests defined in [test.json](./test/test.json), and compares the results to previously captures [test/results](./test/results/).
+
+Capturing new test results can be accomplished by running `npm run test:capture`.  Review the results before committing.
 
 ## Known bugs/limitations:
 

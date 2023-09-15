@@ -15,6 +15,9 @@ for (const runtime of ['bun', 'node']) {
   for (const file of packageInfo.files) {
     if (runtime === 'bun' && file === 'README.md') {
       const contents = fs.readFileSync(file, 'utf-8')
+        .replace('vanilla-candy-sprinkles', 'ciabatta')
+        .replace('`--esm` - use imports (es6) instead of require (cjs)',
+                 '`--cjs` - use require (cjs) instead of imports (es6)')
         .replace(/node-demo/g, 'bun-demo')
         .replace(/Node(\.js)?/g, 'Bun')
         .replace(/npx/g, 'bunx')
