@@ -50,9 +50,9 @@ const subscriber = {
 
     // Forward messages from redis to all websocket clients
     this.client.subscribe('welcome:counter', (message) => {
-      wss.clients.forEach(client => {
+      for (const client of wss.clients) {
         try { client.send(message) } catch {}
-      })
+      }
     })
 
     this.client.on('error', (err) => {

@@ -185,9 +185,9 @@ async function main(_request<% if (options.typescript) { %> : http.IncomingMessa
 <% if (options.htmx) { -%>
     const message = `<div id="counter" hx-swap-oob="innerHTML">${count}</div>`
 <% } -%>
-    <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
+    for (const client of <% if (!options.bun || options.express) { %>wss.<% } %>clients) {
       try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {}
-    })
+    }
 <% } -%>
   }
 

@@ -57,9 +57,9 @@ const subscriber = {
 <% if (options.htmx) { -%>
       message = `<div id="counter" hx-swap-oob="innerHTML">${message}</div>`
 <% } -%>
-      <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
+      for (const client of <% if (!options.bun || options.express) { %>wss.<% } %>clients) {
         try { client.send(message) } catch {}
-      })
+      }
     })
 
     this.client.on('error', (err<% if (options.typescript) { %>: object<% } %>) => {
@@ -144,9 +144,9 @@ const <%= options.mongodb ? 'mongodb' : 'postgres' %> = {
       const message = `<div id="counter" hx-swap-oob="innerHTML">${update.count}</div>`
 
 <% } -%>
-      <% if (!options.bun) { %>wss.<% } %>clients.forEach(client => {
+      for (const client of <% if (!options.bun || options.express) { %>wss.<% } %>clients) {
         try { client.send(<% if (options.htmx) { %>message<% } else { %>count.toString()<% } %>) } catch {}
-      })
+      }
     })
 <% } -%>
 <% } -%>

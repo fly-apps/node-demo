@@ -35,9 +35,9 @@ async function main(_request) {
 
   if (oldCount !== count) {
     // publish new count to all websocket clients
-    clients.forEach(client => {
+    for (const client of clients) {
       try { client.send(count.toString()) } catch {}
-    })
+    }
   }
 
   // render HTML response
