@@ -17,7 +17,7 @@ for (const runtime of ['bun', 'node']) {
       const contents = fs.readFileSync(file, 'utf-8')
         .replace('vanilla-candy-sprinkles', 'ciabatta')
         .replace('`--esm` - use imports (es6) instead of require (cjs)',
-                 '`--cjs` - use require (cjs) instead of imports (es6)')
+          '`--cjs` - use require (cjs) instead of imports (es6)')
         .replace(/node-demo/g, 'bun-demo')
         .replace(/Node(\.js)?/g, 'Bun')
         .replace(/npx/g, 'bunx')
