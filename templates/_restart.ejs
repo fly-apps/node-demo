@@ -6,7 +6,7 @@ const reconnect = {
 // <%= options.mongodb ? 'mongodb' : 'postgres' %> client
 const <%= options.mongodb ? 'mongo' : 'postgres' %> = {
 <% } -%>
-  interval: null<% if (options.typescript) { %> as NodeJS.Timer | null<% } %>,
+  interval: null<% if (options.typescript) { %> as NodeJS.Timeout | null<% } %>,
 <% if (options.typescript && options.redis) { -%>
   connect: null as Function | null,
   disconnect: null as Function | null,
